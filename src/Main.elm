@@ -8,7 +8,9 @@ import Time exposing (Posix)
 
 
 type alias Model =
-    { timeNow : Posix }
+    { timeNow : Posix
+    , fps : Int
+    }
 
 
 type Msg
@@ -19,20 +21,25 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TimeNow timeNow ->
-            ( { model | timeNow = timeNow }, Cmd.none )
+            ( { model
+                | timeNow = timeNow
+                , fps = 1000 // (Time.posixToMillis timeNow - Time.posixToMillis model.timeNow)
+              }
+            , Cmd.none
+            )
 
 
 view : Model -> Document Msg
 view model =
     { title = "Particles!"
-    , body = [ model.timeNow |> Time.posixToMillis |> String.fromInt |> Html.text ]
+    , body = [ model.fps |> String.fromInt |> Html.text ]
     }
 
 
 main : Program () Model Msg
 main =
     Browser.document
-        { init = \_ -> ( { timeNow = Time.millisToPosix 0 }, Task.perform TimeNow Time.now )
+        { init = \_ -> ( { timeNow = Time.millisToPosix 0, fps = 0 }, Task.perform TimeNow Time.now )
         , view = view
         , update = update
         , subscriptions = \_ -> Browser.Events.onAnimationFrame TimeNow

@@ -5,5 +5,6 @@ stdenv.mkDerivation {
   buildInputs = [
     git
     elmPackages.elm
+    elmPackages.elm-format
   ];
 }

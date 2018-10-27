@@ -10,18 +10,21 @@ import Random exposing (Generator)
 import Random.Float exposing (normal)
 import Svg exposing (Svg)
 import Svg.Attributes as SAttrs
+import System exposing (System)
 import Task
 import Time exposing (Posix)
 
 
 type alias Model =
-    { timeNow : Maybe Posix
-    , particles : List (Particle ( String, Float ))
-    }
+    { system : System ParticleInfo }
+
+
+type alias ParticleInfo =
+    { color : String, radius : Float }
 
 
 type Msg
-    = NewParticle (List (Particle ( String, Float )))
+    = NewParticle (List (Particle ParticleInfo))
     | Burst Float Float
     | TimeNow Posix
 
@@ -30,7 +33,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NewParticle particles ->
-            ( { model | particles = particles ++ model.particles }, Cmd.none )
+            ( { model | system = System.add particles model.system }, Cmd.none )
 
         Burst x y ->
             ( model
@@ -38,7 +41,7 @@ update msg model =
                 Random.list 100 <|
                     Random.map3
                         (\heading color radius ->
-                            Particle.init ( color, radius ) 1.5
+                            Particle.init (ParticleInfo color radius) 1.5
                                 |> Particle.at { x = x, y = y }
                                 |> Particle.heading heading
                                 |> Particle.withGravity 980
@@ -49,39 +52,24 @@ update msg model =
             )
 
         TimeNow timeNow ->
-            case model.timeNow of
-                Just last ->
-                    ( { model
-                        | timeNow = Just timeNow
-                        , particles =
-                            List.filterMap
-                                (Particle.update (toFloat (Time.posixToMillis timeNow - Time.posixToMillis last) / 1000))
-                                model.particles
-                      }
-                    , Cmd.none
-                    )
-
-                Nothing ->
-                    ( { model | timeNow = Just timeNow }
-                    , Cmd.none
-                    )
+            ( { model | system = System.update timeNow model.system }, Cmd.none )
 
 
 view : Model -> Document Msg
 view model =
     { title = "Particles!"
     , body =
-        [ Svg.svg
-            [ style "width" "1024px"
-            , style "height" "768px"
+        [ System.view viewColoredCircleParticle
+            [ style "width" "100%"
+            , style "height" "100vh"
             ]
-            (List.map (Particle.view viewColoredCircleParticle) model.particles)
+            model.system
         ]
     }
 
 
-viewColoredCircleParticle : ( String, Float ) -> Float -> Svg msg
-viewColoredCircleParticle ( color, radius ) _ =
+viewColoredCircleParticle : ParticleInfo -> Float -> Svg msg
+viewColoredCircleParticle { color, radius } _ =
     Svg.circle
         [ SAttrs.r (String.fromFloat radius)
         , SAttrs.fill color
@@ -103,7 +91,7 @@ main =
     Browser.document
         { init =
             \_ ->
-                ( { timeNow = Nothing, particles = [] }
+                ( { system = System.init }
                 , Task.perform TimeNow Time.now
                 )
         , view = view

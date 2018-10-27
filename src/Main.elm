@@ -80,7 +80,7 @@ main =
                     [ Task.perform TimeNow Time.now
                     , Random.generate NewParticle
                         (Particle.init () 1
-                            |> Particle.at { x = 50, y = 50 }
+                            |> Particle.at { x = 1024 / 2, y = 768 / 8 }
                             |> Particle.heading { angle = degrees -45, speed = 200 }
                             |> Particle.withGravity 980
                             |> Random.constant

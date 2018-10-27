@@ -5,6 +5,7 @@ import Browser.Events
 import Html exposing (Html)
 import Html.Attributes as Attrs exposing (style)
 import Particle exposing (Particle)
+import Random
 import Svg exposing (Svg)
 import Svg.Attributes as SAttrs
 import Task
@@ -12,34 +13,39 @@ import Time exposing (Posix)
 
 
 type alias Model =
-    { timeNow : Posix
+    { timeNow : Maybe Posix
     , particles : List (Particle ())
     }
 
 
 type Msg
-    = TimeNow Posix
+    = NewParticle (Particle ())
+    | TimeNow Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        TimeNow timeNow ->
-            let
-                delta =
-                    -- deal with the initial 0 state
-                    if Time.posixToMillis model.timeNow == 0 then
-                        0
+        NewParticle particle ->
+            ( { model | particles = particle :: model.particles }, Cmd.none )
 
-                    else
-                        Time.posixToMillis timeNow - Time.posixToMillis model.timeNow
-            in
-            ( { model
-                | timeNow = timeNow
-                , particles = List.filterMap (Particle.update (toFloat delta / 1000)) model.particles
-              }
-            , Cmd.none
-            )
+        TimeNow timeNow ->
+            case model.timeNow of
+                Just last ->
+                    ( { model
+                        | timeNow = Just timeNow
+                        , particles =
+                            List.filterMap
+                                (Particle.update (toFloat (Time.posixToMillis timeNow - Time.posixToMillis last) / 1000))
+                                model.particles
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( { model | timeNow = Just timeNow }
+                    , Cmd.none
+                    )
 
 
 view : Model -> Document Msg
@@ -69,15 +75,17 @@ main =
     Browser.document
         { init =
             \_ ->
-                ( { timeNow = Time.millisToPosix 0
-                  , particles =
-                        [ Particle.init () 1
+                ( { timeNow = Nothing, particles = [] }
+                , Cmd.batch
+                    [ Task.perform TimeNow Time.now
+                    , Random.generate NewParticle
+                        (Particle.init () 1
                             |> Particle.at { x = 50, y = 50 }
                             |> Particle.heading { angle = degrees -45, speed = 200 }
                             |> Particle.withGravity 980
-                        ]
-                  }
-                , Task.perform TimeNow Time.now
+                            |> Random.constant
+                        )
+                    ]
                 )
         , view = view
         , update = update

@@ -19,15 +19,15 @@ type alias Model =
 
 
 type Msg
-    = NewParticle (Particle ())
+    = NewParticle (List (Particle ()))
     | TimeNow Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NewParticle particle ->
-            ( { model | particles = particle :: model.particles }, Cmd.none )
+        NewParticle particles ->
+            ( { model | particles = particles ++ model.particles }, Cmd.none )
 
         TimeNow timeNow ->
             case model.timeNow of
@@ -79,14 +79,15 @@ main =
                 , Cmd.batch
                     [ Task.perform TimeNow Time.now
                     , Random.generate NewParticle <|
-                        Random.map
-                            (\randHeading ->
-                                Particle.init () 1
-                                    |> Particle.at { x = 1024 / 2, y = 768 / 8 }
-                                    |> Particle.heading randHeading
-                                    |> Particle.withGravity 980
-                            )
-                            heading
+                        Random.list 100 <|
+                            Random.map
+                                (\randHeading ->
+                                    Particle.init () 1
+                                        |> Particle.at { x = 1024 / 2, y = 768 / 8 }
+                                        |> Particle.heading randHeading
+                                        |> Particle.withGravity 980
+                                )
+                                heading
                     ]
                 )
         , view = view
@@ -107,6 +108,6 @@ main =
 
 heading : Generator { angle : Float, speed : Float }
 heading =
-    Random.map2 (\angle speed -> { angle = angle, speed = speed })
-        (Random.float -180 0)
-        (Random.float 0 500)
+    Random.map2 (\angle speed -> { angle = degrees angle, speed = speed })
+        (Random.float (180 + 45) (360 - 45))
+        (Random.float 300 500)

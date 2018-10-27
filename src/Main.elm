@@ -4,6 +4,7 @@ import Browser exposing (Document)
 import Browser.Events
 import Html exposing (Html)
 import Html.Attributes as Attrs exposing (style)
+import Json.Decode as Decode
 import Particle exposing (Particle)
 import Random exposing (Generator)
 import Random.Float exposing (normal)
@@ -21,6 +22,7 @@ type alias Model =
 
 type Msg
     = NewParticle (List (Particle ( String, Float )))
+    | Burst Float Float
     | TimeNow Posix
 
 
@@ -29,6 +31,22 @@ update msg model =
     case msg of
         NewParticle particles ->
             ( { model | particles = particles ++ model.particles }, Cmd.none )
+
+        Burst x y ->
+            ( model
+            , Random.generate NewParticle <|
+                Random.list 100 <|
+                    Random.map3
+                        (\heading color radius ->
+                            Particle.init ( color, radius ) 1.5
+                                |> Particle.at { x = x, y = y }
+                                |> Particle.heading heading
+                                |> Particle.withGravity 980
+                        )
+                        genHeading
+                        genColor
+                        genRadius
+            )
 
         TimeNow timeNow ->
             case model.timeNow of
@@ -86,31 +104,20 @@ main =
         { init =
             \_ ->
                 ( { timeNow = Nothing, particles = [] }
-                , Cmd.batch
-                    [ Task.perform TimeNow Time.now
-                    , Random.generate NewParticle <|
-                        Random.list 100 <|
-                            Random.map3
-                                (\heading color radius ->
-                                    Particle.init ( color, radius ) 1.5
-                                        |> Particle.at { x = 1024 / 2, y = 768 / 8 }
-                                        |> Particle.heading heading
-                                        |> Particle.withGravity 980
-                                )
-                                genHeading
-                                genColor
-                                genRadius
-                    ]
+                , Task.perform TimeNow Time.now
                 )
         , view = view
         , update = update
         , subscriptions =
             \model ->
-                if List.isEmpty model.particles then
-                    Sub.none
-
-                else
-                    Browser.Events.onAnimationFrame TimeNow
+                Sub.batch
+                    [ Browser.Events.onAnimationFrame TimeNow
+                    , Browser.Events.onClick
+                        (Decode.map2 Burst
+                            (Decode.field "clientX" Decode.float)
+                            (Decode.field "clientY" Decode.float)
+                        )
+                    ]
         }
 
 

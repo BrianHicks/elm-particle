@@ -48,11 +48,17 @@ at position (Particle particle) =
     Particle { particle | position = position }
 
 
-{-| TODO: make this an angle and magnitude instead of a coordinate
--}
-heading : Coord -> Particle a -> Particle a
-heading velocity (Particle particle) =
-    Particle { particle | velocity = velocity }
+{-| -}
+heading : { speed : Float, angle : Float } -> Particle a -> Particle a
+heading { speed, angle } (Particle particle) =
+    Particle
+        { particle
+            | velocity =
+                Debug.log "cartesian"
+                    { x = speed * cos angle
+                    , y = speed * sin angle
+                    }
+        }
 
 
 withGravity : Float -> Particle a -> Particle a

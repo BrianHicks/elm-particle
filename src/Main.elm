@@ -73,7 +73,7 @@ main =
                   , particles =
                         [ Particle.init () 1
                             |> Particle.at { x = 50, y = 50 }
-                            |> Particle.heading { x = 100, y = -200 }
+                            |> Particle.heading { angle = degrees -45, speed = 200 }
                             |> Particle.withGravity 980
                         ]
                   }

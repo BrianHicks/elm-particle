@@ -5,7 +5,7 @@ import Browser.Events
 import Html exposing (Html)
 import Html.Attributes as Attrs exposing (style)
 import Particle exposing (Particle)
-import Random
+import Random exposing (Generator)
 import Svg exposing (Svg)
 import Svg.Attributes as SAttrs
 import Task
@@ -78,13 +78,15 @@ main =
                 ( { timeNow = Nothing, particles = [] }
                 , Cmd.batch
                     [ Task.perform TimeNow Time.now
-                    , Random.generate NewParticle
-                        (Particle.init () 1
-                            |> Particle.at { x = 1024 / 2, y = 768 / 8 }
-                            |> Particle.heading { angle = degrees -45, speed = 200 }
-                            |> Particle.withGravity 980
-                            |> Random.constant
-                        )
+                    , Random.generate NewParticle <|
+                        Random.map
+                            (\randHeading ->
+                                Particle.init () 1
+                                    |> Particle.at { x = 1024 / 2, y = 768 / 8 }
+                                    |> Particle.heading randHeading
+                                    |> Particle.withGravity 980
+                            )
+                            heading
                     ]
                 )
         , view = view
@@ -97,3 +99,14 @@ main =
                 else
                     Browser.Events.onAnimationFrame TimeNow
         }
+
+
+
+-- generators
+
+
+heading : Generator { angle : Float, speed : Float }
+heading =
+    Random.map2 (\angle speed -> { angle = angle, speed = speed })
+        (Random.float -180 0)
+        (Random.float 0 500)

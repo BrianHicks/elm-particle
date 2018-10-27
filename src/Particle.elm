@@ -16,11 +16,13 @@ import Svg.Attributes as Attrs
 
 
 {-| -}
-type Particle
+type Particle a
     = Particle
-        { position : Coord
+        { data : a
+        , position : Coord
         , velocity : Coord
         , acceleration : Coord
+        , originalLifetime : Float
         , lifetime : Float
         }
 
@@ -29,29 +31,31 @@ type Particle
 -- constructors
 
 
-init : Float -> Particle
-init lifetime =
+init : a -> Float -> Particle a
+init data lifetime =
     Particle
-        { position = { x = 0, y = 0 }
+        { data = data
+        , position = { x = 0, y = 0 }
         , velocity = { x = 0, y = 0 }
         , acceleration = { x = 0, y = 0 }
+        , originalLifetime = lifetime
         , lifetime = lifetime
         }
 
 
-at : Coord -> Particle -> Particle
+at : Coord -> Particle a -> Particle a
 at position (Particle particle) =
     Particle { particle | position = position }
 
 
 {-| TODO: make this an angle and magnitude instead of a coordinate
 -}
-heading : Coord -> Particle -> Particle
+heading : Coord -> Particle a -> Particle a
 heading velocity (Particle particle) =
     Particle { particle | velocity = velocity }
 
 
-withGravity : Float -> Particle -> Particle
+withGravity : Float -> Particle a -> Particle a
 withGravity pxPerSecond (Particle ({ acceleration } as particle)) =
     Particle { particle | acceleration = { acceleration | y = pxPerSecond } }
 
@@ -62,14 +66,15 @@ type alias Coord =
 
 
 {-| -}
-update : Float -> Particle -> Maybe Particle
-update deltaSeconds (Particle { position, velocity, acceleration, lifetime }) =
+update : Float -> Particle a -> Maybe (Particle a)
+update deltaSeconds (Particle { data, position, velocity, acceleration, originalLifetime, lifetime }) =
     if lifetime - deltaSeconds <= 0 then
         Nothing
 
     else
         (Just << Particle)
-            { position =
+            { data = data
+            , position =
                 { x = position.x + velocity.x * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
                 , y = position.y + velocity.y * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
                 }
@@ -78,17 +83,14 @@ update deltaSeconds (Particle { position, velocity, acceleration, lifetime }) =
                 , y = velocity.y + acceleration.y * deltaSeconds
                 }
             , acceleration = acceleration
+            , originalLifetime = originalLifetime
             , lifetime = lifetime - deltaSeconds
             }
 
 
 {-| -}
-view : Particle -> Svg msg
-view (Particle { position, lifetime }) =
-    Svg.rect
-        [ Attrs.width "10px"
-        , Attrs.height "10px"
-        , Attrs.x (String.fromFloat position.x ++ "px")
-        , Attrs.y (String.fromFloat position.y ++ "px")
-        ]
-        [ Svg.text_ [] [ Svg.text (String.fromFloat lifetime) ] ]
+view : (a -> Float -> Svg msg) -> Particle a -> Svg msg
+view viewData (Particle { data, position, originalLifetime, lifetime }) =
+    Svg.g
+        [ Attrs.transform ("translate(" ++ String.fromFloat position.x ++ "," ++ String.fromFloat position.y ++ ")") ]
+        [ viewData data (lifetime / originalLifetime) ]

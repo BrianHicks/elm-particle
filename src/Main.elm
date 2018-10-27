@@ -3,16 +3,17 @@ module Main exposing (Model, Msg(..), main, update, view)
 import Browser exposing (Document)
 import Browser.Events
 import Html exposing (Html)
-import Html.Attributes exposing (style)
+import Html.Attributes as Attrs exposing (style)
 import Particle exposing (Particle)
-import Svg
+import Svg exposing (Svg)
+import Svg.Attributes as SAttrs
 import Task
 import Time exposing (Posix)
 
 
 type alias Model =
     { timeNow : Posix
-    , particles : List Particle
+    , particles : List (Particle ())
     }
 
 
@@ -49,9 +50,18 @@ view model =
             [ style "width" "1024px"
             , style "height" "768px"
             ]
-            (List.map Particle.view model.particles)
+            (List.map (Particle.view viewTextParticle) model.particles)
         ]
     }
+
+
+viewTextParticle : () -> Float -> Svg msg
+viewTextParticle _ remaining =
+    Svg.text_
+        [ SAttrs.dx "0"
+        , SAttrs.dy "20"
+        ]
+        [ Svg.text (String.fromFloat remaining) ]
 
 
 main : Program () Model Msg
@@ -61,7 +71,7 @@ main =
             \_ ->
                 ( { timeNow = Time.millisToPosix 0
                   , particles =
-                        [ Particle.init 1
+                        [ Particle.init () 1
                             |> Particle.at { x = 50, y = 50 }
                             |> Particle.heading { x = 100, y = -200 }
                             |> Particle.withGravity 980

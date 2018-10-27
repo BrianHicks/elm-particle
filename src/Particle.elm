@@ -11,8 +11,8 @@ module Particle exposing
 
 -}
 
-import Html exposing (Html)
-import Html.Attributes exposing (style)
+import Svg exposing (Svg)
+import Svg.Attributes as Attrs
 
 
 {-| -}
@@ -83,11 +83,12 @@ update deltaSeconds (Particle { position, velocity, acceleration, lifetime }) =
 
 
 {-| -}
-view : Particle -> Html msg
+view : Particle -> Svg msg
 view (Particle { position, lifetime }) =
-    Html.div
-        [ style "position" "absolute"
-        , style "left" (String.fromFloat position.x ++ "px")
-        , style "top" (String.fromFloat position.y ++ "px")
+    Svg.rect
+        [ Attrs.width "10px"
+        , Attrs.height "10px"
+        , Attrs.x (String.fromFloat position.x ++ "px")
+        , Attrs.y (String.fromFloat position.y ++ "px")
         ]
-        [ Html.text (String.fromFloat lifetime) ]
+        [ Svg.text_ [] [ Svg.text (String.fromFloat lifetime) ] ]

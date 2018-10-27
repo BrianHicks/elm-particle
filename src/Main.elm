@@ -5,6 +5,7 @@ import Browser.Events
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Particle exposing (Particle)
+import Svg
 import Task
 import Time exposing (Posix)
 
@@ -43,7 +44,13 @@ update msg model =
 view : Model -> Document Msg
 view model =
     { title = "Particles!"
-    , body = List.map Particle.view model.particles
+    , body =
+        [ Svg.svg
+            [ style "width" "1024px"
+            , style "height" "768px"
+            ]
+            (List.map Particle.view model.particles)
+        ]
     }
 
 

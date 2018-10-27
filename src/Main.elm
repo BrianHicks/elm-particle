@@ -6,6 +6,7 @@ import Html exposing (Html)
 import Html.Attributes as Attrs exposing (style)
 import Particle exposing (Particle)
 import Random exposing (Generator)
+import Random.Float exposing (normal)
 import Svg exposing (Svg)
 import Svg.Attributes as SAttrs
 import Task
@@ -14,12 +15,12 @@ import Time exposing (Posix)
 
 type alias Model =
     { timeNow : Maybe Posix
-    , particles : List (Particle String)
+    , particles : List (Particle ( String, Float ))
     }
 
 
 type Msg
-    = NewParticle (List (Particle String))
+    = NewParticle (List (Particle ( String, Float )))
     | TimeNow Posix
 
 
@@ -61,10 +62,10 @@ view model =
     }
 
 
-viewColoredCircleParticle : String -> Float -> Svg msg
-viewColoredCircleParticle color _ =
+viewColoredCircleParticle : ( String, Float ) -> Float -> Svg msg
+viewColoredCircleParticle ( color, radius ) _ =
     Svg.circle
-        [ SAttrs.r "20"
+        [ SAttrs.r (String.fromFloat radius)
         , SAttrs.fill color
         ]
         []
@@ -89,15 +90,16 @@ main =
                     [ Task.perform TimeNow Time.now
                     , Random.generate NewParticle <|
                         Random.list 100 <|
-                            Random.map2
-                                (\heading color ->
-                                    Particle.init color 1.5
+                            Random.map3
+                                (\heading color radius ->
+                                    Particle.init ( color, radius ) 1.5
                                         |> Particle.at { x = 1024 / 2, y = 768 / 8 }
                                         |> Particle.heading heading
                                         |> Particle.withGravity 980
                                 )
                                 genHeading
                                 genColor
+                                genRadius
                     ]
                 )
         , view = view
@@ -121,8 +123,13 @@ genColor =
     Random.uniform "red" [ "green", "blue" ]
 
 
+genRadius : Generator Float
+genRadius =
+    normal 20 5
+
+
 genHeading : Generator { angle : Float, speed : Float }
 genHeading =
     Random.map2 (\angle speed -> { angle = degrees angle, speed = speed })
-        (Random.float (180 + 45) (360 - 45))
+        (normal 270 30)
         (Random.float 300 500)

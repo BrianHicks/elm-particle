@@ -14,12 +14,12 @@ import Time exposing (Posix)
 
 type alias Model =
     { timeNow : Maybe Posix
-    , particles : List (Particle ())
+    , particles : List (Particle String)
     }
 
 
 type Msg
-    = NewParticle (List (Particle ()))
+    = NewParticle (List (Particle String))
     | TimeNow Posix
 
 
@@ -56,9 +56,18 @@ view model =
             [ style "width" "1024px"
             , style "height" "768px"
             ]
-            (List.map (Particle.view viewTextParticle) model.particles)
+            (List.map (Particle.view viewColoredCircleParticle) model.particles)
         ]
     }
+
+
+viewColoredCircleParticle : String -> Float -> Svg msg
+viewColoredCircleParticle color _ =
+    Svg.circle
+        [ SAttrs.r "20"
+        , SAttrs.fill color
+        ]
+        []
 
 
 viewTextParticle : () -> Float -> Svg msg
@@ -80,14 +89,15 @@ main =
                     [ Task.perform TimeNow Time.now
                     , Random.generate NewParticle <|
                         Random.list 100 <|
-                            Random.map
-                                (\randHeading ->
-                                    Particle.init () 1
+                            Random.map2
+                                (\heading color ->
+                                    Particle.init color 1.5
                                         |> Particle.at { x = 1024 / 2, y = 768 / 8 }
-                                        |> Particle.heading randHeading
+                                        |> Particle.heading heading
                                         |> Particle.withGravity 980
                                 )
-                                heading
+                                genHeading
+                                genColor
                     ]
                 )
         , view = view
@@ -106,8 +116,13 @@ main =
 -- generators
 
 
-heading : Generator { angle : Float, speed : Float }
-heading =
+genColor : Generator String
+genColor =
+    Random.uniform "red" [ "green", "blue" ]
+
+
+genHeading : Generator { angle : Float, speed : Float }
+genHeading =
     Random.map2 (\angle speed -> { angle = degrees angle, speed = speed })
         (Random.float (180 + 45) (360 - 45))
         (Random.float 300 500)

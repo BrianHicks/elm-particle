@@ -54,10 +54,9 @@ heading { speed, angle } (Particle particle) =
     Particle
         { particle
             | velocity =
-                Debug.log "cartesian"
-                    { x = speed * cos angle
-                    , y = speed * sin angle
-                    }
+                { x = speed * cos angle
+                , y = speed * sin angle
+                }
         }
 
 

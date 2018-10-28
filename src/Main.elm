@@ -89,17 +89,13 @@ viewTextParticle _ remaining =
 main : Program () Model Msg
 main =
     Browser.document
-        { init =
-            \_ ->
-                ( { system = System.init }
-                , Task.perform TimeNow Time.now
-                )
+        { init = \_ -> ( { system = System.init }, Cmd.none )
         , view = view
         , update = update
         , subscriptions =
             \model ->
                 Sub.batch
-                    [ Browser.Events.onAnimationFrame TimeNow
+                    [ System.sub TimeNow model.system
                     , Browser.Events.onClick
                         (Decode.map2 Burst
                             (Decode.field "clientX" Decode.float)

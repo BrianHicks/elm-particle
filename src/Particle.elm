@@ -48,14 +48,15 @@ at position (Particle particle) =
     Particle { particle | position = position }
 
 
-{-| -}
+{-| 0° is straight up
+-}
 heading : { speed : Float, angle : Float } -> Particle a -> Particle a
 heading { speed, angle } (Particle particle) =
     Particle
         { particle
             | velocity =
-                { x = speed * cos angle
-                , y = speed * sin angle
+                { x = speed * cos (angle - degrees 90)
+                , y = speed * sin (angle - degrees 90)
                 }
         }
 

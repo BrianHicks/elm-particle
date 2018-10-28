@@ -122,5 +122,5 @@ genRadius =
 genHeading : Generator { angle : Float, speed : Float }
 genHeading =
     Random.map2 (\angle speed -> { angle = degrees angle, speed = speed })
-        (normal 270 30)
+        (normal 0 30)
         (Random.float 300 500)

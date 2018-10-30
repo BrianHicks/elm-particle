@@ -67,7 +67,7 @@ update msg model =
                         Random.list (round ((100.0 / 1000.0) * toFloat (Time.posixToMillis timeNow - Time.posixToMillis previousTime))) <|
                             Random.map3
                                 (\heading color radius ->
-                                    Particle.init (ParticleInfo color radius) 1
+                                    Particle.init (ParticleInfo color radius) 1.5
                                         |> Particle.at { x = 500, y = 500 }
                                         |> Particle.heading heading
                                         |> Particle.withGravity 980
@@ -92,12 +92,26 @@ view model =
 
 
 viewColoredCircleParticle : ParticleInfo -> Float -> Svg msg
-viewColoredCircleParticle { color, radius } _ =
+viewColoredCircleParticle { color, radius } lifetime =
+    let
+        control =
+            2
+    in
     Svg.circle
         [ SAttrs.r (String.fromFloat radius)
         , SAttrs.fill color
+        , SAttrs.opacity <| String.fromFloat <| 1 - cubicBezier 1 0.01 0.92 -0.5 lifetime
         ]
         []
+
+
+cubicBezier : Float -> Float -> Float -> Float -> Float -> Float
+cubicBezier p0 p1 p2 p3 t =
+    let
+        oneMinusT =
+            1 - t
+    in
+    oneMinusT ^ 3 * p0 + (3 * oneMinusT ^ 2 * t * p1) + (3 * oneMinusT * t ^ 2 * p2) + (t ^ 3 * p3)
 
 
 viewTextParticle : () -> Float -> Svg msg

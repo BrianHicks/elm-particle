@@ -16,7 +16,9 @@ import Time exposing (Posix)
 
 
 type alias Model =
-    { system : System ParticleInfo }
+    { system : System ParticleInfo
+    , previousTime : Maybe Time.Posix
+    }
 
 
 type alias ParticleInfo =
@@ -46,13 +48,34 @@ update msg model =
                                 |> Particle.heading heading
                                 |> Particle.withGravity 980
                         )
-                        genHeading
+                        (genHeading 0 300)
                         genColor
                         genRadius
             )
 
         TimeNow timeNow ->
-            ( { model | system = System.update timeNow model.system }, Cmd.none )
+            ( { model
+                | system = System.update timeNow model.system
+                , previousTime = Just timeNow
+              }
+            , case model.previousTime of
+                Nothing ->
+                    Cmd.none
+
+                Just previousTime ->
+                    Random.generate NewParticle <|
+                        Random.list (round ((100.0 / 1000.0) * toFloat (Time.posixToMillis timeNow - Time.posixToMillis previousTime))) <|
+                            Random.map3
+                                (\heading color radius ->
+                                    Particle.init (ParticleInfo color radius) 1
+                                        |> Particle.at { x = 500, y = 500 }
+                                        |> Particle.heading heading
+                                        |> Particle.withGravity 980
+                                )
+                                (genHeading 45 600)
+                                genColor
+                                genRadius
+            )
 
 
 view : Model -> Document Msg
@@ -89,13 +112,18 @@ viewTextParticle _ remaining =
 main : Program () Model Msg
 main =
     Browser.document
-        { init = \_ -> ( { system = System.init }, Cmd.none )
+        { init =
+            \_ ->
+                ( { system = System.init, previousTime = Nothing }
+                , Task.perform TimeNow Time.now
+                )
         , view = view
         , update = update
         , subscriptions =
             \model ->
                 Sub.batch
                     [ System.sub TimeNow model.system
+                    , Browser.Events.onAnimationFrame TimeNow
                     , Browser.Events.onClick
                         (Decode.map2 Burst
                             (Decode.field "clientX" Decode.float)
@@ -119,8 +147,8 @@ genRadius =
     normal 20 5
 
 
-genHeading : Generator { angle : Float, speed : Float }
-genHeading =
+genHeading : Float -> Float -> Generator { angle : Float, speed : Float }
+genHeading angleCenter powerCenter =
     Random.map2 (\angle speed -> { angle = degrees angle, speed = speed })
-        (normal 0 30)
-        (Random.float 300 500)
+        (normal angleCenter 10)
+        (normal powerCenter 100)

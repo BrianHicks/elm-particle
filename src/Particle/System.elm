@@ -1,4 +1,4 @@
-module Particle.System exposing (System, add, init, sub, update, view)
+module Particle.System exposing (Msg, System, add, init, sub, update, view)
 
 {-| -}
 
@@ -26,11 +26,26 @@ add particles (System system) =
     System { system | particles = particles ++ system.particles }
 
 
-update : Time.Posix -> System a -> System a
-update newTime (System system) =
+type Msg
+    = NewFrame Time.Posix
+    | NewSeed
+
+
+update : Msg -> System a -> System a
+update msg (System system) =
+    case msg of
+        NewFrame frameTime ->
+            updateNewFrame frameTime (System system)
+
+        NewSeed ->
+            System system
+
+
+updateNewFrame : Time.Posix -> System a -> System a
+updateNewFrame frameTime (System system) =
     case system.lastFrame of
         Nothing ->
-            System { system | lastFrame = Just newTime }
+            System { system | lastFrame = Just frameTime }
 
         Just oldTime ->
             let
@@ -41,7 +56,7 @@ update newTime (System system) =
                 -- computers as well.
                 newParticles =
                     List.filterMap
-                        (Particle.update (toFloat (Time.posixToMillis newTime - Time.posixToMillis oldTime) / 1000))
+                        (Particle.update (toFloat (Time.posixToMillis frameTime - Time.posixToMillis oldTime) / 1000))
                         system.particles
             in
             System
@@ -51,7 +66,7 @@ update newTime (System system) =
                             Nothing
 
                         else
-                            Just newTime
+                            Just frameTime
                     , particles = newParticles
                 }
 
@@ -61,11 +76,11 @@ view viewParticle attrs (System { particles }) =
     Svg.svg attrs (List.map (Particle.view viewParticle) particles)
 
 
-sub : (Time.Posix -> msg) -> System a -> Sub msg
+sub : (Msg -> msg) -> System a -> Sub msg
 sub msg (System system) =
     case system.particles of
         [] ->
             Sub.none
 
         _ ->
-            Browser.Events.onAnimationFrame msg
+            Browser.Events.onAnimationFrame (msg << NewFrame)

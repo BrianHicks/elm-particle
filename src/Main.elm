@@ -16,9 +16,7 @@ import Time exposing (Posix)
 
 
 type alias Model =
-    { system : System ParticleInfo
-    , previousTime : Maybe Time.Posix
-    }
+    { system : System ParticleInfo }
 
 
 type alias ParticleInfo =
@@ -28,7 +26,7 @@ type alias ParticleInfo =
 type Msg
     = NewParticle (List (Particle ParticleInfo))
     | Burst Float Float
-    | TimeNow Posix
+    | ParticleMsg System.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -53,28 +51,22 @@ update msg model =
                         genRadius
             )
 
-        TimeNow timeNow ->
-            ( { model
-                | system = System.update timeNow model.system
-                , previousTime = Just timeNow
-              }
-            , case model.previousTime of
-                Nothing ->
-                    Cmd.none
-
-                Just previousTime ->
-                    Random.generate NewParticle <|
-                        Random.list (round ((100.0 / 1000.0) * toFloat (Time.posixToMillis timeNow - Time.posixToMillis previousTime))) <|
-                            Random.map3
-                                (\heading color radius ->
-                                    Particle.init (ParticleInfo color radius) 1.5
-                                        |> Particle.at { x = 500, y = 500 }
-                                        |> Particle.heading heading
-                                        |> Particle.withGravity 980
-                                )
-                                (genHeading 45 600)
-                                genColor
-                                genRadius
+        ParticleMsg particleMsg ->
+            ( { model | system = System.update particleMsg model.system }
+            , Cmd.none
+              -- Remaining code for emitters:
+              -- Random.generate NewParticle <|
+              --     Random.list (round ((100.0 / 1000.0) * toFloat (Time.posixToMillis timeNow - Time.posixToMillis previousTime))) <|
+              --         Random.map3
+              --             (\heading color radius ->
+              --                 Particle.init (ParticleInfo color radius) 1.5
+              --                     |> Particle.at { x = 500, y = 500 }
+              --                     |> Particle.heading heading
+              --                     |> Particle.withGravity 980
+              --             )
+              --             (genHeading 45 600)
+              --             genColor
+              --             genRadius
             )
 
 
@@ -128,16 +120,13 @@ main =
     Browser.document
         { init =
             \_ ->
-                ( { system = System.init, previousTime = Nothing }
-                , Task.perform TimeNow Time.now
-                )
+                ( { system = System.init }, Cmd.none )
         , view = view
         , update = update
         , subscriptions =
             \model ->
                 Sub.batch
-                    [ System.sub TimeNow model.system
-                    , Browser.Events.onAnimationFrame TimeNow
+                    [ System.sub ParticleMsg model.system
                     , Browser.Events.onClick
                         (Decode.map2 Burst
                             (Decode.field "clientX" Decode.float)

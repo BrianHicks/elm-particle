@@ -10,24 +10,27 @@ import Time
 
 
 type System a
-    = System (Maybe Time.Posix) (List (Particle a))
+    = System
+        { lastFrame : Maybe Time.Posix
+        , particles : List (Particle a)
+        }
 
 
 init : System a
 init =
-    System Nothing []
+    System { lastFrame = Nothing, particles = [] }
 
 
 add : List (Particle a) -> System a -> System a
-add particles (System time system) =
-    System time (particles ++ system)
+add particles (System system) =
+    System { system | particles = particles ++ system.particles }
 
 
 update : Time.Posix -> System a -> System a
-update newTime (System maybeTime particles) =
-    case maybeTime of
+update newTime (System system) =
+    case system.lastFrame of
         Nothing ->
-            System (Just newTime) particles
+            System { system | lastFrame = Just newTime }
 
         Just oldTime ->
             let
@@ -39,26 +42,28 @@ update newTime (System maybeTime particles) =
                 newParticles =
                     List.filterMap
                         (Particle.update (toFloat (Time.posixToMillis newTime - Time.posixToMillis oldTime) / 1000))
-                        particles
+                        system.particles
             in
             System
-                (if List.isEmpty newParticles then
-                    Nothing
+                { system
+                    | lastFrame =
+                        if List.isEmpty newParticles then
+                            Nothing
 
-                 else
-                    Just newTime
-                )
-                newParticles
+                        else
+                            Just newTime
+                    , particles = newParticles
+                }
 
 
 view : (a -> Float -> Svg msg) -> List (Html.Attribute msg) -> System a -> Html msg
-view viewParticle attrs (System _ particles) =
+view viewParticle attrs (System { particles }) =
     Svg.svg attrs (List.map (Particle.view viewParticle) particles)
 
 
 sub : (Time.Posix -> msg) -> System a -> Sub msg
-sub msg (System _ particles) =
-    case particles of
+sub msg (System system) =
+    case system.particles of
         [] ->
             Sub.none
 

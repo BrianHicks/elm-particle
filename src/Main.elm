@@ -24,31 +24,16 @@ type alias ParticleInfo =
 
 
 type Msg
-    = NewParticle (List (Particle ParticleInfo))
-    | Burst Float Float
+    = Burst Float Float
     | ParticleMsg System.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NewParticle particles ->
-            ( { model | system = System.add particles model.system }, Cmd.none )
-
         Burst x y ->
-            ( model
-            , Random.generate NewParticle <|
-                Random.list 100 <|
-                    Random.map3
-                        (\heading color radius ->
-                            Particle.init (ParticleInfo color radius) 1.5
-                                |> Particle.at { x = x, y = y }
-                                |> Particle.heading heading
-                                |> Particle.withGravity 980
-                        )
-                        (genHeading 0 300)
-                        genColor
-                        genRadius
+            ( { model | system = System.add (Random.list 100 (particleAt x y)) model.system }
+            , Cmd.none
             )
 
         ParticleMsg particleMsg ->
@@ -68,6 +53,20 @@ update msg model =
               --             genColor
               --             genRadius
             )
+
+
+particleAt : Float -> Float -> Generator (Particle ParticleInfo)
+particleAt x y =
+    Random.map3
+        (\heading color radius ->
+            Particle.init (ParticleInfo color radius) 1.5
+                |> Particle.at { x = x, y = y }
+                |> Particle.heading heading
+                |> Particle.withGravity 980
+        )
+        (genHeading 0 300)
+        genColor
+        genRadius
 
 
 view : Model -> Document Msg
@@ -120,7 +119,7 @@ main =
     Browser.document
         { init =
             \_ ->
-                ( { system = System.init }, Cmd.none )
+                ( { system = System.init (Random.initialSeed 0) }, Cmd.none )
         , view = view
         , update = update
         , subscriptions =

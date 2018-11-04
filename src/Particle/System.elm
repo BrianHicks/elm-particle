@@ -5,6 +5,7 @@ module Particle.System exposing (Msg, System, add, init, sub, update, view)
 import Browser.Events
 import Html exposing (Html)
 import Particle exposing (Particle)
+import Random exposing (Generator)
 import Svg exposing (Svg)
 import Time
 
@@ -12,18 +13,27 @@ import Time
 type System a
     = System
         { lastFrame : Maybe Time.Posix
+        , seed : Random.Seed
         , particles : List (Particle a)
         }
 
 
-init : System a
-init =
-    System { lastFrame = Nothing, particles = [] }
+init : Random.Seed -> System a
+init seed =
+    System
+        { lastFrame = Nothing
+        , seed = seed
+        , particles = []
+        }
 
 
-add : List (Particle a) -> System a -> System a
-add particles (System system) =
-    System { system | particles = particles ++ system.particles }
+add : Generator (List (Particle a)) -> System a -> System a
+add generator (System system) =
+    let
+        ( particles, nextSeed ) =
+            Random.step generator system.seed
+    in
+    System { system | particles = particles ++ system.particles, seed = nextSeed }
 
 
 type Msg

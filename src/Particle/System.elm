@@ -31,6 +31,11 @@ update newTime (System maybeTime particles) =
 
         Just oldTime ->
             let
+                -- TODO: this should check if the delta is greater than some
+                -- value--a second seems fine--and wait for the next frame to
+                -- update. This *should* take care of hanging when the browser
+                -- tab is unfocused, and it will prevent churn on really slow
+                -- computers as well.
                 newParticles =
                     List.filterMap
                         (Particle.update (toFloat (Time.posixToMillis newTime - Time.posixToMillis oldTime) / 1000))

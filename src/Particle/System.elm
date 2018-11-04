@@ -1,4 +1,4 @@
-module System exposing (System, add, init, sub, update, view)
+module Particle.System exposing (System, add, init, sub, update, view)
 
 {-| -}
 

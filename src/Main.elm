@@ -6,11 +6,11 @@ import Html exposing (Html)
 import Html.Attributes as Attrs exposing (style)
 import Json.Decode as Decode
 import Particle exposing (Particle)
+import Particle.System as System exposing (System)
 import Random exposing (Generator)
 import Random.Float exposing (normal)
 import Svg exposing (Svg)
 import Svg.Attributes as SAttrs
-import System exposing (System)
 import Task
 import Time exposing (Posix)
 

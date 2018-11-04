@@ -1,4 +1,4 @@
-module Particle.System exposing (Msg, System, add, init, sub, update, view)
+module Particle.System exposing (Msg, System, generate, init, sub, update, view)
 
 {-| -}
 
@@ -27,8 +27,8 @@ init seed =
         }
 
 
-add : Generator (List (Particle a)) -> System a -> System a
-add generator (System system) =
+generate : Generator (List (Particle a)) -> System a -> System a
+generate generator (System system) =
     let
         ( particles, nextSeed ) =
             Random.step generator system.seed

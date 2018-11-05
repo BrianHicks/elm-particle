@@ -13,6 +13,7 @@ import Time
 type System a
     = System
         { lastFrame : Maybe Time.Posix
+        , kickstarting : Bool
         , seed : Random.Seed
         , particles : List (Particle a)
         }
@@ -22,6 +23,7 @@ init : Random.Seed -> System a
 init seed =
     System
         { lastFrame = Nothing
+        , kickstarting = True
         , seed = seed
         , particles = []
         }
@@ -38,7 +40,7 @@ burst amount generator (System system) =
 
 stream : Float -> Generator (Particle a) -> System a -> System a
 stream perSecond generator (System system) =
-    System system
+    System { system | kickstarting = True }
 
 
 type Msg
@@ -72,7 +74,8 @@ updateNewFrame frameTime (System system) =
             in
             System
                 { system
-                    | lastFrame =
+                    | kickstarting = False
+                    , lastFrame =
                         if List.isEmpty newParticles then
                             Nothing
 
@@ -89,9 +92,8 @@ view viewParticle attrs (System { particles }) =
 
 sub : (Msg -> msg) -> System a -> Sub msg
 sub msg (System system) =
-    case system.particles of
-        [] ->
-            Sub.none
+    if system.particles /= [] || system.kickstarting then
+        Browser.Events.onAnimationFrame (msg << NewFrame)
 
-        _ ->
-            Browser.Events.onAnimationFrame (msg << NewFrame)
+    else
+        Sub.none

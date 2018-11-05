@@ -42,7 +42,7 @@ burst amount generator (System system) =
 
 stream : Float -> Generator (Particle a) -> System a -> System a
 stream perSecond generator (System system) =
-    case Debug.log "delta" system.lastDelta of
+    case system.lastDelta of
         Just delta ->
             let
                 ( particles, nextSeed ) =

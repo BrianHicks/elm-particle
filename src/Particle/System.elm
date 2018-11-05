@@ -114,7 +114,6 @@ updateNewFrame frameTime (System system) =
                 { system
                     | thisFrame = thisFrame
                     , lastFrame = lastFrame
-                    , kickstarting = False
                     , particles = newParticles
                 }
 

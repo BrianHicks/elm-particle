@@ -12,8 +12,8 @@ import Time
 
 type System a
     = System
-        { thisFrame : Maybe Int
-        , lastFrame : Maybe Int
+        { frame : Maybe Int
+        , lastDelta : Maybe Int
         , kickstarting : Bool
         , seed : Random.Seed
         , particles : List (Particle a)
@@ -23,8 +23,8 @@ type System a
 init : Random.Seed -> System a
 init seed =
     System
-        { thisFrame = Nothing
-        , lastFrame = Nothing
+        { frame = Nothing
+        , lastDelta = Nothing
         , kickstarting = True
         , seed = seed
         , particles = []
@@ -42,13 +42,13 @@ burst amount generator (System system) =
 
 stream : Float -> Generator (Particle a) -> System a -> System a
 stream perSecond generator (System system) =
-    case ( system.thisFrame, system.lastFrame ) of
-        ( Just thisFrame, Just lastFrame ) ->
+    case Debug.log "delta" system.lastDelta of
+        Just delta ->
             let
                 ( particles, nextSeed ) =
                     Random.step
                         (Random.list
-                            (round ((perSecond / 1000) * toFloat (thisFrame - lastFrame)))
+                            (round ((perSecond / 1000) * toFloat delta))
                             generator
                         )
                         system.seed
@@ -57,10 +57,10 @@ stream perSecond generator (System system) =
                 { system
                     | particles = particles ++ system.particles
                     , seed = nextSeed
-                    , kickstarting = False
+                    , kickstarting = True
                 }
 
-        ( _, _ ) ->
+        _ ->
             System { system | kickstarting = True }
 
 
@@ -78,15 +78,18 @@ update msg (System system) =
 updateNewFrame : Time.Posix -> System a -> System a
 updateNewFrame frameTime (System system) =
     let
-        newTime =
+        newFrame =
             Time.posixToMillis frameTime
     in
-    case system.thisFrame of
+    case system.frame of
         Nothing ->
-            System { system | thisFrame = Just newTime }
+            System { system | frame = Just newFrame }
 
-        Just oldTime ->
+        Just oldFrame ->
             let
+                delta =
+                    newFrame - oldFrame
+
                 -- TODO: this should check if the delta is greater than some
                 -- value--a second seems fine--and wait for the next frame to
                 -- update. This *should* take care of hanging when the browser
@@ -94,31 +97,23 @@ updateNewFrame frameTime (System system) =
                 -- computers as well.
                 newParticles =
                     List.filterMap
-                        (Particle.update (toFloat (newTime - oldTime) / 1000))
+                        (Particle.update (toFloat (newFrame - oldFrame) / 1000))
                         system.particles
 
                 emptyParticles =
                     List.isEmpty newParticles
-
-                thisFrame =
-                    if emptyParticles && not system.kickstarting then
-                        Nothing
-
-                    else
-                        Just newTime
-
-                lastFrame =
-                    if emptyParticles && not system.kickstarting then
-                        Nothing
-
-                    else
-                        system.thisFrame
             in
             System
                 { system
-                    | thisFrame = thisFrame
-                    , lastFrame = lastFrame
+                    | frame =
+                        if emptyParticles && not system.kickstarting then
+                            Nothing
+
+                        else
+                            Just newFrame
+                    , lastDelta = Just delta
                     , particles = newParticles
+                    , kickstarting = False
                 }
 
 

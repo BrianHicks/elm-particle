@@ -1,4 +1,4 @@
-module Particle.System exposing (Msg, System, burst, init, sub, update, view)
+module Particle.System exposing (Msg, System, burst, init, stream, sub, update, view)
 
 {-| -}
 
@@ -34,6 +34,11 @@ burst amount generator (System system) =
             Random.step (Random.list amount generator) system.seed
     in
     System { system | particles = particles ++ system.particles, seed = nextSeed }
+
+
+stream : Float -> Generator (Particle a) -> System a -> System a
+stream perSecond generator (System system) =
+    System system
 
 
 type Msg

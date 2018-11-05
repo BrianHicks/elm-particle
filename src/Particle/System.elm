@@ -12,7 +12,8 @@ import Time
 
 type System a
     = System
-        { lastFrame : Maybe Time.Posix
+        { thisFrame : Maybe Time.Posix
+        , lastFrame : Maybe Time.Posix
         , kickstarting : Bool
         , seed : Random.Seed
         , particles : List (Particle a)
@@ -22,7 +23,8 @@ type System a
 init : Random.Seed -> System a
 init seed =
     System
-        { lastFrame = Nothing
+        { thisFrame = Nothing
+        , lastFrame = Nothing
         , kickstarting = True
         , seed = seed
         , particles = []
@@ -40,7 +42,26 @@ burst amount generator (System system) =
 
 stream : Float -> Generator (Particle a) -> System a -> System a
 stream perSecond generator (System system) =
-    System { system | kickstarting = True }
+    case ( system.thisFrame, system.lastFrame ) of
+        ( Just thisFrame, Just lastFrame ) ->
+            let
+                ( particles, nextSeed ) =
+                    Random.step
+                        (Random.list
+                            (round ((perSecond / 1000) * toFloat (Time.posixToMillis thisFrame - Time.posixToMillis lastFrame)))
+                            generator
+                        )
+                        system.seed
+            in
+            System
+                { system
+                    | particles = particles ++ system.particles
+                    , seed = nextSeed
+                    , kickstarting = False
+                }
+
+        ( _, _ ) ->
+            System { system | kickstarting = True }
 
 
 type Msg
@@ -56,9 +77,9 @@ update msg (System system) =
 
 updateNewFrame : Time.Posix -> System a -> System a
 updateNewFrame frameTime (System system) =
-    case system.lastFrame of
+    case system.thisFrame of
         Nothing ->
-            System { system | lastFrame = Just frameTime }
+            System { system | thisFrame = Just frameTime }
 
         Just oldTime ->
             let
@@ -71,16 +92,29 @@ updateNewFrame frameTime (System system) =
                     List.filterMap
                         (Particle.update (toFloat (Time.posixToMillis frameTime - Time.posixToMillis oldTime) / 1000))
                         system.particles
+
+                emptyParticles =
+                    List.isEmpty newParticles
+
+                thisFrame =
+                    if emptyParticles && not system.kickstarting then
+                        Nothing
+
+                    else
+                        Just frameTime
+
+                lastFrame =
+                    if emptyParticles && not system.kickstarting then
+                        Nothing
+
+                    else
+                        system.thisFrame
             in
             System
                 { system
-                    | kickstarting = False
-                    , lastFrame =
-                        if List.isEmpty newParticles then
-                            Nothing
-
-                        else
-                            Just frameTime
+                    | thisFrame = thisFrame
+                    , lastFrame = lastFrame
+                    , kickstarting = False
                     , particles = newParticles
                 }
 

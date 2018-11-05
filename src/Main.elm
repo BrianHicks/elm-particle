@@ -37,21 +37,23 @@ update msg model =
             )
 
         ParticleMsg particleMsg ->
-            ( { model | system = System.update particleMsg model.system }
+            ( { model
+                | system =
+                    System.update particleMsg model.system
+                        |> System.stream 100
+                            (Random.map3
+                                (\heading color radius ->
+                                    Particle.init (ParticleInfo color radius) 1
+                                        |> Particle.at { x = 500, y = 500 }
+                                        |> Particle.heading heading
+                                        |> Particle.withGravity 980
+                                )
+                                (genHeading 45 600)
+                                genColor
+                                genRadius
+                            )
+              }
             , Cmd.none
-              -- Remaining code for emitters:
-              -- Random.generate NewParticle <|
-              --     Random.list (round ((100.0 / 1000.0) * toFloat (Time.posixToMillis timeNow - Time.posixToMillis previousTime))) <|
-              --         Random.map3
-              --             (\heading color radius ->
-              --                 Particle.init (ParticleInfo color radius) 1.5
-              --                     |> Particle.at { x = 500, y = 500 }
-              --                     |> Particle.heading heading
-              --                     |> Particle.withGravity 980
-              --             )
-              --             (genHeading 45 600)
-              --             genColor
-              --             genRadius
             )
 
 

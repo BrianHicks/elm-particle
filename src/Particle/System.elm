@@ -1,4 +1,4 @@
-module Particle.System exposing (Msg, System, generate, init, sub, update, view)
+module Particle.System exposing (Msg, System, burst, init, sub, update, view)
 
 {-| -}
 
@@ -27,11 +27,11 @@ init seed =
         }
 
 
-generate : Generator (List (Particle a)) -> System a -> System a
-generate generator (System system) =
+burst : Int -> Generator (Particle a) -> System a -> System a
+burst amount generator (System system) =
     let
         ( particles, nextSeed ) =
-            Random.step generator system.seed
+            Random.step (Random.list amount generator) system.seed
     in
     System { system | particles = particles ++ system.particles, seed = nextSeed }
 

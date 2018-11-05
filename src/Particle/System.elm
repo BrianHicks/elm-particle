@@ -12,8 +12,8 @@ import Time
 
 type System a
     = System
-        { thisFrame : Maybe Time.Posix
-        , lastFrame : Maybe Time.Posix
+        { thisFrame : Maybe Int
+        , lastFrame : Maybe Int
         , kickstarting : Bool
         , seed : Random.Seed
         , particles : List (Particle a)
@@ -48,7 +48,7 @@ stream perSecond generator (System system) =
                 ( particles, nextSeed ) =
                     Random.step
                         (Random.list
-                            (round ((perSecond / 1000) * toFloat (Time.posixToMillis thisFrame - Time.posixToMillis lastFrame)))
+                            (round ((perSecond / 1000) * toFloat (thisFrame - lastFrame)))
                             generator
                         )
                         system.seed
@@ -77,9 +77,13 @@ update msg (System system) =
 
 updateNewFrame : Time.Posix -> System a -> System a
 updateNewFrame frameTime (System system) =
+    let
+        newTime =
+            Time.posixToMillis frameTime
+    in
     case system.thisFrame of
         Nothing ->
-            System { system | thisFrame = Just frameTime }
+            System { system | thisFrame = Just newTime }
 
         Just oldTime ->
             let
@@ -90,7 +94,7 @@ updateNewFrame frameTime (System system) =
                 -- computers as well.
                 newParticles =
                     List.filterMap
-                        (Particle.update (toFloat (Time.posixToMillis frameTime - Time.posixToMillis oldTime) / 1000))
+                        (Particle.update (toFloat (newTime - oldTime) / 1000))
                         system.particles
 
                 emptyParticles =
@@ -101,7 +105,7 @@ updateNewFrame frameTime (System system) =
                         Nothing
 
                     else
-                        Just frameTime
+                        Just newTime
 
                 lastFrame =
                     if emptyParticles && not system.kickstarting then

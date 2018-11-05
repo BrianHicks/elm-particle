@@ -38,7 +38,6 @@ burst amount generator (System system) =
 
 type Msg
     = NewFrame Time.Posix
-    | NewSeed
 
 
 update : Msg -> System a -> System a
@@ -46,9 +45,6 @@ update msg (System system) =
     case msg of
         NewFrame frameTime ->
             updateNewFrame frameTime (System system)
-
-        NewSeed ->
-            System system
 
 
 updateNewFrame : Time.Posix -> System a -> System a

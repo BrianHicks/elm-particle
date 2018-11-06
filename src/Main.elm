@@ -25,7 +25,7 @@ type alias ParticleInfo =
 
 type Msg
     = Burst Float Float
-    | ParticleMsg System.Msg
+    | ParticleMsg (System.Msg ParticleInfo)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -37,22 +37,7 @@ update msg model =
             )
 
         ParticleMsg particleMsg ->
-            ( { model
-                | system =
-                    System.update particleMsg model.system
-                        |> System.stream 100
-                            (Random.map3
-                                (\heading color radius ->
-                                    Particle.init (ParticleInfo color radius) 1
-                                        |> Particle.at { x = 500, y = 500 }
-                                        |> Particle.heading heading
-                                        |> Particle.withGravity 980
-                                )
-                                (genHeading 45 600)
-                                genColor
-                                genRadius
-                            )
-              }
+            ( { model | system = System.update particleMsg model.system }
             , Cmd.none
             )
 
@@ -127,7 +112,7 @@ main =
         , subscriptions =
             \model ->
                 Sub.batch
-                    [ System.sub ParticleMsg model.system
+                    [ System.sub [ waterEmitter ] ParticleMsg model.system
                     , Browser.Events.onClick
                         (Decode.map2 Burst
                             (Decode.field "clientX" Decode.float)
@@ -135,6 +120,26 @@ main =
                         )
                     ]
         }
+
+
+
+-- emitters
+
+
+waterEmitter : Int -> Generator (List (Particle ParticleInfo))
+waterEmitter delta =
+    Random.list (ceiling (toFloat delta / 1000))
+        (Random.map3
+            (\heading color radius ->
+                Particle.init (ParticleInfo color radius) 1
+                    |> Particle.at { x = 500, y = 500 }
+                    |> Particle.heading heading
+                    |> Particle.withGravity 980
+            )
+            (genHeading 45 600)
+            genColor
+            genRadius
+        )
 
 
 

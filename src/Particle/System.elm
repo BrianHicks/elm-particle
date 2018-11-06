@@ -1,4 +1,4 @@
-module Particle.System exposing (Msg, System, burst, init, stream, sub, update, view)
+module Particle.System exposing (Msg, System, burst, init, sub, update, view)
 
 {-| -}
 
@@ -13,8 +13,6 @@ import Time
 type System a
     = System
         { frame : Maybe Int
-        , lastDelta : Maybe Int
-        , kickstarting : Bool
         , seed : Random.Seed
         , particles : List (Particle a)
         }
@@ -24,8 +22,6 @@ init : Random.Seed -> System a
 init seed =
     System
         { frame = Nothing
-        , lastDelta = Nothing
-        , kickstarting = True
         , seed = seed
         , particles = []
         }
@@ -40,56 +36,23 @@ burst amount generator (System system) =
     System { system | particles = particles ++ system.particles, seed = nextSeed }
 
 
-stream : Float -> Generator (Particle a) -> System a -> System a
-stream perSecond generator (System system) =
-    case system.lastDelta of
-        Just delta ->
-            let
-                ( particles, nextSeed ) =
-                    Random.step
-                        (Random.list
-                            (round ((perSecond / 1000) * toFloat delta))
-                            generator
-                        )
-                        system.seed
-            in
+type Msg a
+    = NewFrame Int (List (Particle a)) Random.Seed
+
+
+update : Msg a -> System a -> System a
+update (NewFrame frameTime particles seed) (System system) =
+    case frameDelta frameTime system.frame of
+        Nothing ->
             System
                 { system
-                    | particles = particles ++ system.particles
-                    , seed = nextSeed
-                    , kickstarting = True
+                    | frame = Just frameTime
+                    , particles = particles ++ system.particles
+                    , seed = seed
                 }
 
-        _ ->
-            System { system | kickstarting = True }
-
-
-type Msg
-    = NewFrame Time.Posix
-
-
-update : Msg -> System a -> System a
-update msg (System system) =
-    case msg of
-        NewFrame frameTime ->
-            updateNewFrame frameTime (System system)
-
-
-updateNewFrame : Time.Posix -> System a -> System a
-updateNewFrame frameTime (System system) =
-    let
-        newFrame =
-            Time.posixToMillis frameTime
-    in
-    case system.frame of
-        Nothing ->
-            System { system | frame = Just newFrame }
-
-        Just oldFrame ->
+        Just delta ->
             let
-                delta =
-                    newFrame - oldFrame
-
                 -- TODO: this should check if the delta is greater than some
                 -- value--a second seems fine--and wait for the next frame to
                 -- update. This *should* take care of hanging when the browser
@@ -97,24 +60,25 @@ updateNewFrame frameTime (System system) =
                 -- computers as well.
                 newParticles =
                     List.filterMap
-                        (Particle.update (toFloat (newFrame - oldFrame) / 1000))
-                        system.particles
-
-                emptyParticles =
-                    List.isEmpty newParticles
+                        (Particle.update (toFloat delta / 1000))
+                        (particles ++ system.particles)
             in
             System
                 { system
                     | frame =
-                        if emptyParticles && not system.kickstarting then
+                        if List.isEmpty newParticles then
                             Nothing
 
                         else
-                            Just newFrame
-                    , lastDelta = Just delta
+                            Just frameTime
                     , particles = newParticles
-                    , kickstarting = False
+                    , seed = seed
                 }
+
+
+frameDelta : Int -> Maybe Int -> Maybe Int
+frameDelta current maybePrevious =
+    Maybe.map (\previous -> current - previous) maybePrevious
 
 
 view : (a -> Float -> Svg msg) -> List (Html.Attribute msg) -> System a -> Html msg
@@ -122,10 +86,36 @@ view viewParticle attrs (System { particles }) =
     Svg.svg attrs (List.map (Particle.view viewParticle) particles)
 
 
-sub : (Msg -> msg) -> System a -> Sub msg
-sub msg (System system) =
-    if system.particles /= [] || system.kickstarting then
-        Browser.Events.onAnimationFrame (msg << NewFrame)
+sub : List (Int -> Generator (List (Particle a))) -> (Msg a -> msg) -> System a -> Sub msg
+sub emitters msg ((System system) as outer) =
+    if List.isEmpty emitters && List.isEmpty system.particles then
+        Sub.none
 
     else
-        Sub.none
+        Browser.Events.onAnimationFrame
+            (\newTime ->
+                let
+                    frame =
+                        Time.posixToMillis newTime
+
+                    ( particles, seed ) =
+                        emitterParticles emitters frame outer
+                in
+                msg <| NewFrame frame particles seed
+            )
+
+
+emitterParticles : List (Int -> Generator (List (Particle a))) -> Int -> System a -> ( List (Particle a), Random.Seed )
+emitterParticles emitters newFrame (System { frame, seed }) =
+    case frameDelta newFrame frame of
+        Just delta ->
+            emitters
+                |> List.foldl
+                    (\emitter ( particles, curSeed ) ->
+                        Random.step (emitter delta) curSeed
+                            |> Tuple.mapFirst ((++) particles)
+                    )
+                    ( [], seed )
+
+        Nothing ->
+            ( [], seed )

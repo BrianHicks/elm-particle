@@ -80,9 +80,9 @@ main =
 -- emitters
 
 
-waterEmitter : Int -> Generator (List (Particle ParticleInfo))
+waterEmitter : Float -> Generator (List (Particle ParticleInfo))
 waterEmitter delta =
-    Random.list (ceiling (toFloat delta / 1000))
+    Random.list (ceiling (delta / 1000))
         (Random.map3
             (\heading color radius ->
                 Particle.init (ParticleInfo color radius) 1

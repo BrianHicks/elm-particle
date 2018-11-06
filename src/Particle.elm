@@ -67,7 +67,13 @@ type Particle a
 
 
 {-| Get a [`Particle`](#Particle), given some data to use to render it and a
-lifetime for it to live (in seconds.)
+lifetime for it to live (in seconds.) For our `Confetti`, we'd get a yellow
+diamond that lasts a second and a half by calling `init` like this:
+
+    init
+        { color = Color.yellow, shape = Diamond }
+        1.5
+
 -}
 init : a -> Float -> Particle a
 init data lifetime =
@@ -88,7 +94,16 @@ type alias Coord =
     { x : Float, y : Float }
 
 
-{-| Where should this particle start?
+{-| Where should this particle start? So to render at the top left corner:
+
+    Particle.init () 1
+        |> Particle.at { x = 0, y = 0 }
+
+Or in the center of the image:
+
+    Particle.init () 1
+        |> Particle.at { x = width / 2, y = height / 2 }
+
 -}
 at : Coord -> Particle a -> Particle a
 at position (Particle particle) =
@@ -101,7 +116,14 @@ In this case, speed is a rough measurement—it doesn't correspond exactly to
 pixels per second, so you'll have to experiment. Sorry!
 
 On the other hand, angle _is_ well-defined: we use the Elm Standard Units™
-(Radians) and 0° is straight up
+(Radians.) 0° is straight up, and rotation goes clockwise (so `45` is
+northeast.)
+
+So if we want our confetti to spray up and to the right just a little bit, we'll
+do something like:
+
+    Particle.init () 1
+        |> Particle.heading { speed = 200, angle = degrees 45 }
 
 -}
 heading : { speed : Float, angle : Float } -> Particle a -> Particle a
@@ -120,6 +142,12 @@ heading { speed, angle } (Particle particle) =
 The unit here ends up being pixels per second per second. If you want something
 earthlike, you'll probably want `9.8 * dots/meter`. Buuut that's also super
 fast, and you probably want something more cartoony. `980` works well!
+
+Back to our confetti, we certainly want it to be affected by gravity, so we'll
+do this:
+
+    Particle.init () 1
+        |> Particle.withGravity 980
 
 (**Note:** under the covers, this is really modeling acceleration over time, so
 it's not _only_ gravity. But, I can't think of anything offhand I need this for
@@ -167,7 +195,22 @@ update deltaMs (Particle { data, position, velocity, acceleration, originalLifet
 {-| How should this particle look? Give me a function, to which I'll pass the
 data you gave me in `init` and a value between 1 and 0 representing the percent
 of lifetime this particle has left (this is good things like fading out or
-spinning!)
+spinning!) So our confetti might look like this:
+
+    view
+        (\{ color, shape } remainingLifetime ->
+            case shape of
+                Circle ->
+                    Svg.circle
+                        [ Svg.Attributes.r "10"
+                        , Svg.Attributes.fill (Color.toHex color)
+                        ]
+                        []
+
+                _ ->
+                    -- other shapes here
+        )
+
 -}
 view : (a -> Float -> Svg msg) -> Particle a -> Svg msg
 view viewData (Particle { data, position, originalLifetime, lifetime }) =

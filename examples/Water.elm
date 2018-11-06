@@ -1,5 +1,8 @@
 module Main exposing (Model, Msg(..), main, update, view)
 
+-- TODO: make these water droplets a bit nicer, and document this whole thing
+-- TODO: oh, and clean up the imports
+
 import Browser exposing (Document)
 import Browser.Events
 import Html exposing (Html)
@@ -16,28 +19,22 @@ import Time exposing (Posix)
 
 
 type alias Model =
-    { system : System ParticleInfo }
+    { system : System Droplet }
 
 
-type alias ParticleInfo =
+type alias Droplet =
     { color : String
     , radius : Float
     }
 
 
 type Msg
-    = Burst Float Float
-    | ParticleMsg (System.Msg ParticleInfo)
+    = ParticleMsg (System.Msg Droplet)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Burst x y ->
-            ( { model | system = System.burst 100 (particleAt x y) model.system }
-            , Cmd.none
-            )
-
         ParticleMsg particleMsg ->
             ( { model | system = System.update particleMsg model.system }
             , Cmd.none
@@ -46,9 +43,9 @@ update msg model =
 
 view : Model -> Document Msg
 view model =
-    { title = "Particles!"
+    { title = "Water!"
     , body =
-        [ System.view viewColoredCircleParticle
+        [ System.view viewDroplet
             [ style "width" "100%"
             , style "height" "100vh"
             ]
@@ -64,15 +61,7 @@ main =
         , view = view
         , update = update
         , subscriptions =
-            \model ->
-                Sub.batch
-                    [ System.sub [ waterEmitter ] ParticleMsg model.system
-                    , Browser.Events.onClick
-                        (Decode.map2 Burst
-                            (Decode.field "clientX" Decode.float)
-                            (Decode.field "clientY" Decode.float)
-                        )
-                    ]
+            \model -> Sub.batch [ System.sub [ waterEmitter ] ParticleMsg model.system ]
         }
 
 
@@ -80,12 +69,12 @@ main =
 -- emitters
 
 
-waterEmitter : Float -> Generator (List (Particle ParticleInfo))
+waterEmitter : Float -> Generator (List (Particle Droplet))
 waterEmitter delta =
     Random.list (ceiling (delta / 1000))
         (Random.map3
             (\heading color radius ->
-                Particle.init (ParticleInfo color radius) 1
+                Particle.init (Droplet color radius) 1
                     |> Particle.at { x = 500, y = 500 }
                     |> Particle.heading heading
                     |> Particle.withGravity 980
@@ -98,20 +87,6 @@ waterEmitter delta =
 
 
 -- generators
-
-
-particleAt : Float -> Float -> Generator (Particle ParticleInfo)
-particleAt x y =
-    Random.map3
-        (\heading color radius ->
-            Particle.init (ParticleInfo color radius) 1.5
-                |> Particle.at { x = x, y = y }
-                |> Particle.heading heading
-                |> Particle.withGravity 980
-        )
-        (genHeading 0 300)
-        genColor
-        genRadius
 
 
 genColor : Generator String
@@ -135,8 +110,8 @@ genHeading angleCenter powerCenter =
 -- views
 
 
-viewColoredCircleParticle : ParticleInfo -> Float -> Svg msg
-viewColoredCircleParticle { color, radius } lifetime =
+viewDroplet : Droplet -> Float -> Svg msg
+viewDroplet { color, radius } lifetime =
     Svg.circle
         [ SAttrs.r (String.fromFloat radius)
         , SAttrs.fill color

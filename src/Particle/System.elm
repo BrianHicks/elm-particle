@@ -46,10 +46,7 @@ update (NewFrame delta particles seed) (System system) =
     -- tab is unfocused, and it will prevent churn on really slow
     -- computers as well.
     System
-        { particles =
-            List.filterMap
-                (Particle.update (delta / 1000))
-                (particles ++ system.particles)
+        { particles = List.filterMap (Particle.update delta) (particles ++ system.particles)
         , seed = seed
         }
 

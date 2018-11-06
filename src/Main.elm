@@ -20,7 +20,9 @@ type alias Model =
 
 
 type alias ParticleInfo =
-    { color : String, radius : Float }
+    { color : String
+    , radius : Float
+    }
 
 
 type Msg
@@ -42,20 +44,6 @@ update msg model =
             )
 
 
-particleAt : Float -> Float -> Generator (Particle ParticleInfo)
-particleAt x y =
-    Random.map3
-        (\heading color radius ->
-            Particle.init (ParticleInfo color radius) 1.5
-                |> Particle.at { x = x, y = y }
-                |> Particle.heading heading
-                |> Particle.withGravity 980
-        )
-        (genHeading 0 300)
-        genColor
-        genRadius
-
-
 view : Model -> Document Msg
 view model =
     { title = "Particles!"
@@ -69,44 +57,10 @@ view model =
     }
 
 
-viewColoredCircleParticle : ParticleInfo -> Float -> Svg msg
-viewColoredCircleParticle { color, radius } lifetime =
-    let
-        control =
-            2
-    in
-    Svg.circle
-        [ SAttrs.r (String.fromFloat radius)
-        , SAttrs.fill color
-        , SAttrs.opacity <| String.fromFloat <| 1 - cubicBezier 1 0.01 0.92 -0.5 lifetime
-        ]
-        []
-
-
-cubicBezier : Float -> Float -> Float -> Float -> Float -> Float
-cubicBezier p0 p1 p2 p3 t =
-    let
-        oneMinusT =
-            1 - t
-    in
-    oneMinusT ^ 3 * p0 + (3 * oneMinusT ^ 2 * t * p1) + (3 * oneMinusT * t ^ 2 * p2) + (t ^ 3 * p3)
-
-
-viewTextParticle : () -> Float -> Svg msg
-viewTextParticle _ remaining =
-    Svg.text_
-        [ SAttrs.dx "0"
-        , SAttrs.dy "20"
-        ]
-        [ Svg.text (String.fromFloat remaining) ]
-
-
 main : Program () Model Msg
 main =
     Browser.document
-        { init =
-            \_ ->
-                ( { system = System.init (Random.initialSeed 0) }, Cmd.none )
+        { init = \_ -> ( { system = System.init (Random.initialSeed 0) }, Cmd.none )
         , view = view
         , update = update
         , subscriptions =
@@ -146,6 +100,20 @@ waterEmitter delta =
 -- generators
 
 
+particleAt : Float -> Float -> Generator (Particle ParticleInfo)
+particleAt x y =
+    Random.map3
+        (\heading color radius ->
+            Particle.init (ParticleInfo color radius) 1.5
+                |> Particle.at { x = x, y = y }
+                |> Particle.heading heading
+                |> Particle.withGravity 980
+        )
+        (genHeading 0 300)
+        genColor
+        genRadius
+
+
 genColor : Generator String
 genColor =
     Random.uniform "#E3F2FD" [ "#BBDEFB", "#90CAF9", "#64B5F6", "#42A5F5", "#2196F3", "#1E88E5", "#1976D2", "#1565C0", "#0D47A1" ]
@@ -161,3 +129,30 @@ genHeading angleCenter powerCenter =
     Random.map2 (\angle speed -> { angle = degrees angle, speed = speed })
         (normal angleCenter 10)
         (normal powerCenter 100)
+
+
+
+-- views
+
+
+viewColoredCircleParticle : ParticleInfo -> Float -> Svg msg
+viewColoredCircleParticle { color, radius } lifetime =
+    Svg.circle
+        [ SAttrs.r (String.fromFloat radius)
+        , SAttrs.fill color
+        , SAttrs.opacity <| String.fromFloat <| 1 - cubicBezier 1 0.01 0.92 -0.5 lifetime
+        ]
+        []
+
+
+
+-- utils
+
+
+cubicBezier : Float -> Float -> Float -> Float -> Float -> Float
+cubicBezier p0 p1 p2 p3 t =
+    let
+        oneMinusT =
+            1 - t
+    in
+    oneMinusT ^ 3 * p0 + (3 * oneMinusT ^ 2 * t * p1) + (3 * oneMinusT * t ^ 2 * p2) + (t ^ 3 * p3)

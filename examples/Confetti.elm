@@ -184,6 +184,8 @@ viewConfetti confetti lifetime =
                 , SAttrs.x "-10px"
                 , SAttrs.y "-10px"
                 , SAttrs.fill (fill color)
+                , SAttrs.stroke (stroke color)
+                , SAttrs.strokeWidth "1px"
                 , SAttrs.opacity <| String.fromFloat <| 1 - cubicBezier 1 0 1 -0.5 lifetime
                 , SAttrs.style <|
                     "transform: rotateX("
@@ -214,6 +216,25 @@ fill color =
 
         Blue ->
             "#4A92FF"
+
+
+stroke : Color -> String
+stroke color =
+    case color of
+        Red ->
+            "#E4A5B7"
+
+        Pink ->
+            "#D28194"
+
+        Orange ->
+            "#D9AF87"
+
+        Yellow ->
+            "#C9B975"
+
+        Blue ->
+            "#93A7D8"
 
 
 

@@ -32,7 +32,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Burst x y ->
-            ( { model | system = System.burst 50 (particleAt x y) model.system }
+            ( { model | system = System.burst 25 (particleAt x y) model.system }
             , Cmd.none
             )
 
@@ -87,7 +87,13 @@ streaming out towards the upper right.
 
 -}
 type Confetti
-    = Square Color
+    = Square
+        { color : Color
+        , rotationOffset : Float
+        , xRotations : Float
+        , yRotations : Float
+        , zRotations : Float
+        }
 
 
 {-| What color make our little celebration pieces? We'll use a custom type here
@@ -106,14 +112,28 @@ Emoji.
 -}
 genSquare : Generator Confetti
 genSquare =
-    Random.map Square <|
-        Random.weighted
+    Random.map5
+        (\color rotationOffset xRotations yRotations zRotations ->
+            Square
+                { color = color
+                , rotationOffset = rotationOffset
+                , xRotations = xRotations
+                , yRotations = yRotations
+                , zRotations = zRotations
+                }
+        )
+        (Random.weighted
             ( 2 / 11, Red )
             [ ( 2 / 11, Pink )
             , ( 2 / 11, Orange )
             , ( 2 / 11, Yellow )
             , ( 3 / 11, Blue )
             ]
+        )
+        (normal 0 1)
+        (normal 0 1)
+        (normal 0 1)
+        (normal 0 1)
 
 
 {-| Generate confetti according to the ratios seen in the Apple Color Emoji.
@@ -164,12 +184,20 @@ genHeading angleCenter powerCenter =
 viewConfetti : Confetti -> Float -> Svg msg
 viewConfetti confetti lifetime =
     case confetti of
-        Square color ->
+        Square { color, rotationOffset, xRotations, yRotations, zRotations } ->
             Svg.rect
-                [ SAttrs.width "20"
-                , SAttrs.height "20"
+                [ SAttrs.width "20px"
+                , SAttrs.height "20px"
                 , SAttrs.fill (fill color)
-                , SAttrs.opacity <| String.fromFloat <| 1 - cubicBezier 1 0.01 0.92 -0.5 lifetime
+                , SAttrs.opacity <| String.fromFloat <| 1 - cubicBezier 1 0 1 -0.5 lifetime
+                , SAttrs.style <|
+                    "transform-origin: 10px 10px 0px; transform: rotateX("
+                        ++ String.fromFloat (xRotations * lifetime + rotationOffset)
+                        ++ "turn) rotateY("
+                        ++ String.fromFloat (yRotations * lifetime + rotationOffset)
+                        ++ "turn) rotateZ("
+                        ++ String.fromFloat (zRotations * lifetime + rotationOffset)
+                        ++ "turn);"
                 ]
                 []
 

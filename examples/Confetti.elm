@@ -147,8 +147,8 @@ genConfetti =
 
 particleAt : Float -> Float -> Generator (Particle Confetti)
 particleAt x y =
-    Random.map4
-        (\confetti heading color radius ->
+    Random.map2
+        (\confetti heading ->
             Particle.init confetti 1.5
                 |> Particle.at { x = x, y = y }
                 |> Particle.heading heading
@@ -156,13 +156,6 @@ particleAt x y =
         )
         genConfetti
         (genHeading 0 400)
-        genColor
-        genRadius
-
-
-genColor : Generator String
-genColor =
-    Random.uniform "red" [ "green", "blue", "yellow" ]
 
 
 genRadius : Generator Float

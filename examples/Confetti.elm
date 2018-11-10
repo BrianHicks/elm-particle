@@ -11,6 +11,7 @@ import Json.Decode as Decode
 import Particle exposing (Particle)
 import Particle.System as System exposing (System)
 import Random exposing (Generator)
+import Random.Extra
 import Random.Float exposing (normal)
 import Svg exposing (Svg)
 import Svg.Attributes as SAttrs
@@ -22,12 +23,6 @@ type alias Model =
     { system : System Confetti }
 
 
-type alias Confetti =
-    { color : String
-    , radius : Float
-    }
-
-
 type Msg
     = Burst Float Float
     | ParticleMsg (System.Msg Confetti)
@@ -37,7 +32,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Burst x y ->
-            ( { model | system = System.burst 100 (particleAt x y) model.system }
+            ( { model | system = System.burst 50 (particleAt x y) model.system }
             , Cmd.none
             )
 
@@ -80,18 +75,66 @@ main =
 
 
 
--- generators
+-- Generators!
+
+
+{-| We're going to emulate the Apple Color Emoji party popper emoji: 🎉
+([emojipedia](https://emojipedia.org/party-popper/))
+
+What's it got? Well, we've got the cone, which we'll render statically and maybe
+have a little animation elsewhere. But then we've got streamers and confetti,
+streaming out towards the upper right.
+
+-}
+type Confetti
+    = Square Color
+
+
+{-| What color make our little celebration pieces? We'll use a custom type here
+to represent which colors we want, as they have a slightly off-color border.
+-}
+type Color
+    = Red
+    | Pink
+    | Orange
+    | Yellow
+    | Blue
+
+
+{-| Generate a confetti square, using the color ratios seen in the Apple Color
+Emoji.
+-}
+genSquare : Generator Confetti
+genSquare =
+    Random.map Square <|
+        Random.weighted
+            ( 2 / 11, Red )
+            [ ( 2 / 11, Pink )
+            , ( 2 / 11, Orange )
+            , ( 2 / 11, Yellow )
+            , ( 3 / 11, Blue )
+            ]
+
+
+{-| Generate confetti according to the ratios seen in the Apple Color Emoji.
+-}
+genConfetti : Generator Confetti
+genConfetti =
+    Random.Extra.frequency
+        ( 11 / 15, genSquare )
+        []
 
 
 particleAt : Float -> Float -> Generator (Particle Confetti)
 particleAt x y =
-    Random.map3
-        (\heading color radius ->
-            Particle.init (Confetti color radius) 1.5
+    Random.map4
+        (\confetti heading color radius ->
+            Particle.init confetti 1.5
                 |> Particle.at { x = x, y = y }
                 |> Particle.heading heading
                 |> Particle.withGravity 980
         )
+        genConfetti
         (genHeading 0 400)
         genColor
         genRadius
@@ -119,13 +162,35 @@ genHeading angleCenter powerCenter =
 
 
 viewConfetti : Confetti -> Float -> Svg msg
-viewConfetti { color, radius } lifetime =
-    Svg.circle
-        [ SAttrs.r (String.fromFloat radius)
-        , SAttrs.fill color
-        , SAttrs.opacity <| String.fromFloat <| 1 - cubicBezier 1 0.01 0.92 -0.5 lifetime
-        ]
-        []
+viewConfetti confetti lifetime =
+    case confetti of
+        Square color ->
+            Svg.rect
+                [ SAttrs.width "20"
+                , SAttrs.height "20"
+                , SAttrs.fill (fill color)
+                , SAttrs.opacity <| String.fromFloat <| 1 - cubicBezier 1 0.01 0.92 -0.5 lifetime
+                ]
+                []
+
+
+fill : Color -> String
+fill color =
+    case color of
+        Red ->
+            "#D93E61"
+
+        Pink ->
+            "#F884B2"
+
+        Orange ->
+            "#FEA849"
+
+        Yellow ->
+            "#FEFD34"
+
+        Blue ->
+            "#4A92FF"
 
 
 

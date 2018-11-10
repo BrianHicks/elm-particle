@@ -181,10 +181,12 @@ viewConfetti confetti lifetime =
             Svg.rect
                 [ SAttrs.width "20px"
                 , SAttrs.height "20px"
+                , SAttrs.x "-10px"
+                , SAttrs.y "-10px"
                 , SAttrs.fill (fill color)
                 , SAttrs.opacity <| String.fromFloat <| 1 - cubicBezier 1 0 1 -0.5 lifetime
                 , SAttrs.style <|
-                    "transform-origin: 10px 10px 0px; transform: rotateX("
+                    "transform: rotateX("
                         ++ String.fromFloat (xRotations * lifetime + rotationOffset)
                         ++ "turn) rotateY("
                         ++ String.fromFloat (yRotations * lifetime + rotationOffset)

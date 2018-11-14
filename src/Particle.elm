@@ -161,8 +161,8 @@ withGravity pxPerSecond (Particle ({ acceleration } as particle)) =
 
 {-| Update a single particle, given a delta in milliseconds.
 
-**Hey!** You probably shouldn't use this! Instead, manage all your particles
-with a `Particle.System`!
+**Hey!** You probably shouldn't use this! Instead, manage all your particles at
+once with the functions in `Particle.System`!
 
 -}
 update : Float -> Particle a -> Maybe (Particle a)

@@ -26,6 +26,7 @@ module Particle exposing
 
 -}
 
+import Random exposing (Generator)
 import Svg exposing (Svg)
 import Svg.Attributes as Attrs
 
@@ -66,25 +67,65 @@ type Particle a
 -- constructors
 
 
-{-| Get a [`Particle`](#Particle), given some data to use to render it and a
-lifetime for it to live (in seconds.) For our `Confetti`, we'd get a yellow
-diamond that lasts a second and a half by calling `init` like this:
+{-| Get a [`Generator Particle`](#Particle), given a `Random.Generator` to use
+to render get the specific data you want it to life and a lifetime in seconds.
+For our `Confetti`, we'd get a yellow diamond that lasts a second and a half by
+calling `init` like this:
 
-    init
-        { color = Color.yellow, shape = Diamond }
-        1.5
+    init 1.5
+        (Random.constant { color = Yellow, shape = Diamond })
+
+Or we could get a random color and shape with the functions from `Random`:
+
+    init 1.5
+        (Random.map2 (\color shape -> { color = color, shape = shape })
+            (Random.uniform Red [ Orange, Yellow, Green, Blue, Purple ])
+            (Random.uniform Circle [ Square, Diamond ])
+        )
+
+But this API is designed so that you can compose things together by piping
+them. So in your code, it should probably look more like this:
+
+    confetti : Random.Generator Confetti
+    confetti =
+        Random.map2 (\color shape -> { color = color, shape = shape })
+            (Random.uniform Red [ Orange, Yellow, Green, Blue, Purple ])
+            (Random.uniform Circle [ Square, Diamond ])
+
+Then, when you're generating particles, you can use `init` to start your
+pipeline like this:
+
+    confetti
+        |> init 1.5
+
+This will make a `Confetti` which is one of the colors and shapes listed in the
+calls to `Random.uniform`
+
+**Tip!** If you haven't used the `Random` library before, check out [The Elm
+Guide's explanation][teg].
+
+So, why does this need to be a `Random.Generator` of your specific particle?
+Well, it's rarely interesting for 100 particles to be doing exactly the same
+thing. And, in fact, they'll all appear like on particle if you release them in
+a `burst`.
+
+[teg]: https://guide.elm-lang.org/effects/random.html
 
 -}
-init : a -> Float -> Particle a
-init data lifetime =
-    Particle
-        { data = data
-        , position = { x = 0, y = 0 }
-        , velocity = { x = 0, y = 0 }
-        , acceleration = { x = 0, y = 0 }
-        , originalLifetime = lifetime
-        , lifetime = lifetime
-        }
+init : Float -> Generator a -> Generator (Particle a)
+init lifetime generator =
+    Random.map
+        (\data ->
+            Particle
+                { data = data
+                , position = { x = 0, y = 0 }
+                , velocity = { x = 0, y = 0 }
+                , acceleration = { x = 0, y = 0 }
+                , originalLifetime = lifetime
+                , lifetime = lifetime
+                }
+        )
+        generator
 
 
 {-| Coordinates—since we're using SVG for rendering, the units here are pixels
@@ -94,20 +135,31 @@ type alias Coord =
     { x : Float, y : Float }
 
 
-{-| Where should this particle start? So to render at the top left corner:
+{-| Where should this particle start? `{ x = 0, y = 0}` is at the top left of
+the image. So we can render in the center like this:
 
-    Particle.init () 1
-        |> Particle.at { x = 0, y = 0 }
+    confetti
+        |> init 1
+        |> at (Random.constant { x = width / 2, y = height / 2 })
 
-Or in the center of the image:
+Or at a random location on screen like this:
 
-    Particle.init () 1
-        |> Particle.at { x = width / 2, y = height / 2 }
+    confetti
+        |> init 1
+        |> at
+            (Random.map2 (\x y -> { x = x, y = y })
+                (Random.map (modBy width << abs) Random.float)
+                (Random.map (modBy height << abs) Random.float)
+            )
+
+(although you may want to check out `Random.Float.normal` from
+`elm-community/random-extra` as it will give you a more "natural-looking"
+distribution with a clump in the middle and less on the outsides.)
 
 -}
-at : Coord -> Particle a -> Particle a
-at position (Particle particle) =
-    Particle { particle | position = position }
+at : Generator { x : Float, y : Float } -> Generator (Particle a) -> Generator (Particle a)
+at =
+    Random.map2 (\position (Particle particle) -> Particle { particle | position = position })
 
 
 {-| In which direction should this particle travel, and how fast should it go?
@@ -116,24 +168,39 @@ In this case, speed is a rough measurement—it doesn't correspond exactly to
 pixels per second, so you'll have to experiment. Sorry!
 
 On the other hand, angle _is_ well-defined: we use the Elm Standard Units™
-(Radians.) 0° is straight up, and rotation goes clockwise.
+(Radians.) `0` is straight up, and rotation goes clockwise.
 
 So if we want our confetti to spray up and to the right just a little bit, we'll
 do something like:
 
-    Particle.init () 1
-        |> Particle.heading { speed = 200, angle = degrees 45 }
+    confetti
+        |> Particle.init 1
+        |> Particle.heading (Random.constant { speed = 200, angle = degrees 45 })
+
+But like the rest of these, you'll get a nicer-looking result by using
+randomness:
+
+    confetti
+        |> Particle.init 1
+        |> Particle.heading
+            (Random.map2 (\speed angle -> { speed = speed, angle = angle })
+                (Random.Float.normal 300 100)
+                (Random.Float.normal (degrees 45) (degrees 10))
+            )
 
 -}
-heading : { speed : Float, angle : Float } -> Particle a -> Particle a
-heading { speed, angle } (Particle particle) =
-    Particle
-        { particle
-            | velocity =
-                { x = speed * cos (angle - degrees 90)
-                , y = speed * sin (angle - degrees 90)
+heading : Generator { speed : Float, angle : Float } -> Generator (Particle a) -> Generator (Particle a)
+heading =
+    Random.map2
+        (\{ speed, angle } (Particle particle) ->
+            Particle
+                { particle
+                    | velocity =
+                        { x = speed * cos (angle - degrees 90)
+                        , y = speed * sin (angle - degrees 90)
+                        }
                 }
-        }
+        )
 
 
 {-| Is this particle affected by gravity?

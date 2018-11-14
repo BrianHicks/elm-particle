@@ -116,8 +116,7 @@ In this case, speed is a rough measurement—it doesn't correspond exactly to
 pixels per second, so you'll have to experiment. Sorry!
 
 On the other hand, angle _is_ well-defined: we use the Elm Standard Units™
-(Radians.) 0° is straight up, and rotation goes clockwise (so `45` is
-northeast.)
+(Radians.) 0° is straight up, and rotation goes clockwise.
 
 So if we want our confetti to spray up and to the right just a little bit, we'll
 do something like:

@@ -1,7 +1,7 @@
 module Particle.System exposing
     ( System, init
-    , Msg, update, view, sub
     , burst
+    , Msg, update, view, sub
     )
 
 {-|
@@ -12,14 +12,14 @@ module Particle.System exposing
 @docs System, init
 
 
-# Work with TEA!
-
-@docs Msg, update, view, sub
-
-
 # Gimme some particles!
 
 @docs burst
+
+
+# Simulate Particles
+
+@docs Msg, update, view, sub
 
 -}
 
@@ -64,6 +64,50 @@ init seed =
 -}
 type Msg a
     = NewFrame Float (List (Particle a)) Random.Seed
+
+
+{-| Make a burst of a bunch of particles at once! Use this for things like
+confetti or fireworks. We use randomness here because 100 particles all doing
+exactly the same thing tends to be uninterseting.
+
+If you haven't used the `Random` library before, check out [Joël Quenneville's
+blog post][rrr] and [talk] about it!
+
+We could make a burst of 50 confetti particles like this:
+
+    burst
+        (Random.list 50
+            (Random.map4
+                (\angle speed color shape ->
+                    Particle.init { color = color, shape = shape }
+                        |> Particle.at { x = 50, y = 50 }
+                        |> Particle.heading { angle = angle, speed = speed }
+                        |> Particle.withGravity 980
+                )
+                -- generate our heading information using
+                -- elm-community/random-extra's `Random.Float.normal` function. This
+                -- gives us random data centered in a normal distribution around a
+                -- given mean. This looks more natural than linear randomness. Give
+                -- it a try!
+                (Random.Float.normal 0 (degrees 10))
+                (Random.Float.normal 300 100)
+                -- our colors and shapes, though, are fine to use linear randomness!
+                (Random.uniform Color.red [ Color.green, Color.blue ])
+                (Random.uniform Shape.Circle [ Shape.Triangle, Shape.Diamond ])
+            )
+        )
+
+[rrr]: https://robots.thoughtbot.com/rolling-random-romans
+[talk]: https://www.youtube.com/watch?v=YxGWQdFo2Yc
+
+-}
+burst : Generator (List (Particle a)) -> System a -> System a
+burst generator (System system) =
+    let
+        ( particles, nextSeed ) =
+            Random.step generator system.seed
+    in
+    System { system | particles = particles ++ system.particles, seed = nextSeed }
 
 
 {-| Update all the particles by one step. Use it in your `update` function
@@ -152,43 +196,3 @@ emitterParticles delta emitters (System { seed }) =
                     |> Tuple.mapFirst ((++) particles)
             )
             ( [], seed )
-
-
-{-| Make a burst of a bunch of particles at once! Use this for things like
-confetti or fireworks.
-
-Unlike emitters, you can trigger a burst anytime and I'll do The Right Thing™
-with the subscriptions. I can do this because you're telling me how many
-particles to render all at once, instead of calculating it based on how much
-time has passed.
-
-We could do a confetti burst like this:
-
-    burst 100
-        (Random.map4
-            (\angle speed color shape ->
-                Particle.init { color = color, shape = shape }
-                    |> Particle.at { x = 50, y = 50 }
-                    |> Particle.heading { angle = angle, speed = speed }
-                    |> Particle.withGravity 980
-            )
-            -- generate our heading information using
-            -- elm-community/random-extra's `Random.Float.normal` function. This
-            -- gives us random data centered in a normal distribution around a
-            -- given mean. This looks way more natural than linear
-            -- randomness. Try it!
-            (Random.Float.normal 0 (degrees 10))
-            (Random.Float.normal 300 100)
-            -- our colors and shapes, though, are fine to use linear randomness!
-            (Random.uniform Color.red [ Color.green, Color.blue ])
-            (Random.univorm Shape.Circle [ Shape.Triangle, Shape.Diamond ])
-        )
-
--}
-burst : Int -> Generator (Particle a) -> System a -> System a
-burst amount generator (System system) =
-    let
-        ( particles, nextSeed ) =
-            Random.step (Random.list amount generator) system.seed
-    in
-    System { system | particles = particles ++ system.particles, seed = nextSeed }

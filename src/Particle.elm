@@ -46,9 +46,9 @@ like this:
         , shape : Shape -- like Circle, Square, Diamond, etc
         }
 
-Then a `Particle` of confetti—just one of those little pieces—would
-be... `Particle Confetti`. Boring, but in the best way possible! You'll get to
-see this data again in `view` when you render your particle.
+Then a `Particle` of confetti—just one of those little pieces—would be `Particle
+Confetti`. Boring, but in the best way possible! You'll get to see this data
+again in `view` when you render your particle.
 
 -}
 type Particle a

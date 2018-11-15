@@ -32,7 +32,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Burst x y ->
-            ( { model | system = System.burst 25 (particleAt x y) model.system }
+            ( { model | system = System.burst (Random.list 25 (particleAt x y)) model.system }
             , Cmd.none
             )
 
@@ -147,15 +147,11 @@ genConfetti =
 
 particleAt : Float -> Float -> Generator (Particle Confetti)
 particleAt x y =
-    Random.map2
-        (\confetti heading ->
-            Particle.init confetti 1.5
-                |> Particle.at { x = x, y = y }
-                |> Particle.heading heading
-                |> Particle.withGravity 980
-        )
-        genConfetti
-        (genHeading 0 400)
+    Particle.generate genConfetti
+        |> Particle.withLifetime (Random.constant 1.5)
+        |> Particle.at (Random.constant { x = x, y = y })
+        |> Particle.heading (genHeading 0 400)
+        |> Particle.withGravity 980
 
 
 genRadius : Generator Float

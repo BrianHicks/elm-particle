@@ -131,20 +131,37 @@ view model =
     in
     { title = "Confetti!"
     , body =
-        [ Html.span
-            [ style "position" "absolute"
+        [ Html.img
+            [ Attrs.src "tada-cone-only.png"
+            , Attrs.width 64
+            , Attrs.height 64
+            , Attrs.alt "\"tada\" emoji from Mutant Standard"
+            , style "position" "absolute"
             , style "left" (String.fromFloat (mouseX - 30) ++ "px")
             , style "top" (String.fromFloat (mouseY - 40) ++ "px")
-            , style "cursor" "none"
-            , style "font-size" "80px"
             , style "user-select" "none"
+            , style "z-index" "2"
             ]
-            [ Html.text "🎉" ]
+            []
         , System.view viewConfetti
             [ style "width" "100%"
             , style "height" "100vh"
+            , style "z-index" "1"
+            , style "position" "relative"
             ]
             model.system
+        , Html.img
+            [ Attrs.src "tada.png"
+            , Attrs.width 64
+            , Attrs.height 64
+            , Attrs.alt "\"tada\" emoji from Mutant Standard"
+            , style "position" "absolute"
+            , style "left" (String.fromFloat (mouseX - 30) ++ "px")
+            , style "top" (String.fromFloat (mouseY - 40) ++ "px")
+            , style "user-select" "none"
+            , style "z-index" "0"
+            ]
+            []
         ]
     }
 

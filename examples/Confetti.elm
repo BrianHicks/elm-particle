@@ -21,9 +21,8 @@ import Svg.Attributes as SAttrs
 {-| We're going to make confetti come out of the party popper emoji: 🎉
 ([emojipedia](https://emojipedia.org/party-popper/))
 
-What's it got? Well, at least in Apple Color Emoji, we've got the cone, which
-we'll render statically elsewhere. But then we've got streamers and confetti,
-streaming out towards the upper right.
+What's it got? Well, in the Mutant Standard Emoji, we've got the cone–which
+we'll render statically–bursting streamers and confetti towards the upper right.
 
 -}
 type Confetti
@@ -40,13 +39,12 @@ to represent which colors we want, as they have a slightly off-color border.
 type Color
     = Red
     | Pink
-    | Orange
     | Yellow
-    | Blue
+    | Green
 
 
-{-| Generate a confetti square, using the color ratios seen in the Apple Color
-Emoji.
+{-| Generate a confetti square, using the color ratios seen in the Mutant
+Standard Emoji.
 -}
 genSquare : Generator Confetti
 genSquare =
@@ -59,15 +57,14 @@ genSquare =
                 }
         )
         (Random.weighted
-            ( 2 / 11, Red )
-            [ ( 2 / 11, Pink )
-            , ( 2 / 11, Orange )
-            , ( 2 / 11, Yellow )
-            , ( 3 / 11, Blue )
+            ( 1 / 5, Red )
+            [ ( 1 / 5, Pink )
+            , ( 1 / 5, Yellow )
+            , ( 2 / 5, Green )
             ]
         )
         (normal 0 1)
-        (normal 2 1)
+        (normal 1 1)
 
 
 {-| Generate confetti according to the ratios seen in the Apple Color Emoji.
@@ -137,9 +134,10 @@ view model =
             , Attrs.height 64
             , Attrs.alt "\"tada\" emoji from Mutant Standard"
             , style "position" "absolute"
-            , style "left" (String.fromFloat (mouseX - 30) ++ "px")
-            , style "top" (String.fromFloat (mouseY - 40) ++ "px")
+            , style "left" (String.fromFloat (mouseX - 20) ++ "px")
+            , style "top" (String.fromFloat (mouseY - 30) ++ "px")
             , style "user-select" "none"
+            , style "cursor" "none"
             , style "z-index" "2"
             ]
             []
@@ -156,9 +154,10 @@ view model =
             , Attrs.height 64
             , Attrs.alt "\"tada\" emoji from Mutant Standard"
             , style "position" "absolute"
-            , style "left" (String.fromFloat (mouseX - 30) ++ "px")
-            , style "top" (String.fromFloat (mouseY - 40) ++ "px")
+            , style "left" (String.fromFloat (mouseX - 20) ++ "px")
+            , style "top" (String.fromFloat (mouseY - 30) ++ "px")
             , style "user-select" "none"
+            , style "cursor" "none"
             , style "z-index" "0"
             ]
             []
@@ -207,13 +206,15 @@ viewConfetti confetti lifetime =
     case confetti of
         Square { color, rotationOffset, rotations } ->
             Svg.rect
-                [ SAttrs.width "8px"
-                , SAttrs.height "8px"
-                , SAttrs.x "-4px"
-                , SAttrs.y "-4px"
+                [ SAttrs.width "10px"
+                , SAttrs.height "10px"
+                , SAttrs.x "-5px"
+                , SAttrs.y "-5px"
+                , SAttrs.rx "2px"
+                , SAttrs.rx "2px"
                 , SAttrs.fill (fill color)
-                , SAttrs.stroke (stroke color)
-                , SAttrs.strokeWidth "1px"
+                , SAttrs.stroke "black"
+                , SAttrs.strokeWidth "4px"
                 , SAttrs.opacity <| String.fromFloat opacity
                 , SAttrs.transform <| "rotate(" ++ String.fromFloat ((rotations * lifetime + rotationOffset) * 360) ++ ")"
                 ]
@@ -224,35 +225,13 @@ fill : Color -> String
 fill color =
     case color of
         Red ->
-            "#D93E61"
+            "#D72D35"
 
         Pink ->
-            "#F884B2"
-
-        Orange ->
-            "#FEA849"
+            "#F2298A"
 
         Yellow ->
-            "#FEFD34"
+            "#F2C618"
 
-        Blue ->
-            "#4A92FF"
-
-
-stroke : Color -> String
-stroke color =
-    case color of
-        Red ->
-            "#E4A5B7"
-
-        Pink ->
-            "#D28194"
-
-        Orange ->
-            "#D9AF87"
-
-        Yellow ->
-            "#C9B975"
-
-        Blue ->
-            "#93A7D8"
+        Green ->
+            "#2ACC42"

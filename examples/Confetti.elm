@@ -108,7 +108,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Burst x y ->
-            ( { model | system = System.burst (Random.list 1 (particleAt x y)) model.system }
+            ( { model | system = System.burst (Random.list 50 (particleAt x y)) model.system }
             , Cmd.none
             )
 

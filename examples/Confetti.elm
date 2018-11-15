@@ -7,11 +7,13 @@ import Html.Attributes as Attrs exposing (style)
 import Json.Decode as Decode
 import Particle exposing (Particle)
 import Particle.System as System exposing (System)
+import Process
 import Random exposing (Generator)
 import Random.Extra
 import Random.Float exposing (normal)
 import Svg exposing (Svg)
 import Svg.Attributes as SAttrs
+import Task
 
 
 
@@ -31,6 +33,10 @@ type Confetti
         , rotationOffset : Float
         , rotations : Float
         }
+    | Streamer
+        { color : Color
+        , length : Int
+        }
 
 
 {-| What color make our little celebration pieces? We'll use a custom type here
@@ -41,6 +47,7 @@ type Color
     | Pink
     | Yellow
     | Green
+    | Blue
 
 
 {-| Generate a confetti square, using the color ratios seen in the Mutant
@@ -67,13 +74,26 @@ genSquare =
         (normal 1 1)
 
 
+genStreamer : Generator Confetti
+genStreamer =
+    Random.map2
+        (\color length ->
+            Streamer
+                { color = color
+                , length = round (abs length)
+                }
+        )
+        (Random.uniform Pink [ Yellow, Blue ])
+        (normal 25 10)
+
+
 {-| Generate confetti according to the ratios seen in the Apple Color Emoji.
 -}
 genConfetti : Generator Confetti
 genConfetti =
     Random.Extra.frequency
-        ( 11 / 15, genSquare )
-        []
+        ( 5 / 8, genSquare )
+        [ ( 3 / 8, genStreamer ) ]
 
 
 particleAt : Float -> Float -> Generator (Particle Confetti)
@@ -86,7 +106,7 @@ particleAt x y =
                 (normal (degrees 47) (degrees 15))
                 (normal 500 100)
             )
-        |> Particle.withGravity 780
+        |> Particle.withGravity 980
 
 
 type alias Model =
@@ -96,7 +116,8 @@ type alias Model =
 
 
 type Msg
-    = Burst Float Float
+    = TriggerBurst
+    | BurstAtMouse
     | MouseMove Float Float
     | ParticleMsg (System.Msg Confetti)
 
@@ -104,8 +125,22 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Burst x y ->
-            ( { model | system = System.burst (Random.list 50 (particleAt x y)) model.system }
+        TriggerBurst ->
+            ( model
+            , Cmd.batch
+                [ Process.sleep 0 |> Task.perform (\_ -> BurstAtMouse)
+                , Process.sleep 50 |> Task.perform (\_ -> BurstAtMouse)
+                , Process.sleep 100 |> Task.perform (\_ -> BurstAtMouse)
+                , Process.sleep 150 |> Task.perform (\_ -> BurstAtMouse)
+                ]
+            )
+
+        BurstAtMouse ->
+            let
+                ( x, y ) =
+                    model.mouse
+            in
+            ( { model | system = System.burst (Random.list 25 (particleAt x y)) model.system }
             , Cmd.none
             )
 
@@ -163,11 +198,7 @@ main =
             \model ->
                 Sub.batch
                     [ System.sub [] ParticleMsg model.system
-                    , Browser.Events.onClick
-                        (Decode.map2 Burst
-                            (Decode.field "clientX" Decode.float)
-                            (Decode.field "clientY" Decode.float)
-                        )
+                    , Browser.Events.onClick (Decode.succeed TriggerBurst)
                     , Browser.Events.onMouseMove
                         (Decode.map2 MouseMove
                             (Decode.field "clientX" Decode.float)
@@ -184,9 +215,6 @@ main =
 viewConfetti : Particle Confetti -> Svg msg
 viewConfetti particle =
     let
-        confetti =
-            Particle.data particle
-
         lifetime =
             Particle.lifetimePercent particle
 
@@ -197,7 +225,7 @@ viewConfetti particle =
             else
                 1
     in
-    case confetti of
+    case Particle.data particle of
         Square { color, rotationOffset, rotations } ->
             Svg.rect
                 [ SAttrs.width "10px"
@@ -205,12 +233,27 @@ viewConfetti particle =
                 , SAttrs.x "-5px"
                 , SAttrs.y "-5px"
                 , SAttrs.rx "2px"
-                , SAttrs.rx "2px"
+                , SAttrs.ry "2px"
                 , SAttrs.fill (fill color)
                 , SAttrs.stroke "black"
                 , SAttrs.strokeWidth "4px"
                 , SAttrs.opacity <| String.fromFloat opacity
                 , SAttrs.transform <| "rotate(" ++ String.fromFloat ((rotations * lifetime + rotationOffset) * 360) ++ ")"
+                ]
+                []
+
+        Streamer { color, length } ->
+            Svg.rect
+                [ SAttrs.height "10px"
+                , SAttrs.width <| String.fromInt length ++ "px"
+                , SAttrs.y "-5px"
+                , SAttrs.rx "2px"
+                , SAttrs.ry "2px"
+                , SAttrs.fill (fill color)
+                , SAttrs.stroke "black"
+                , SAttrs.strokeWidth "4px"
+                , SAttrs.opacity <| String.fromFloat opacity
+                , SAttrs.transform <| "rotate(" ++ String.fromFloat (Particle.direction particle * 180 / pi) ++ ")"
                 ]
                 []
 
@@ -229,3 +272,6 @@ fill color =
 
         Green ->
             "#2ACC42"
+
+        Blue ->
+            "#37CBE8"

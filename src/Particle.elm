@@ -1,6 +1,6 @@
 module Particle exposing
     ( Particle, generate, withLifetime, withLocation, withHeading, withGravity
-    , view, data, lifetimePercent
+    , view, data, lifetimePercent, direction
     , update
     )
 
@@ -14,7 +14,7 @@ module Particle exposing
 
 # Rendering Particles
 
-@docs view, data, lifetimePercent
+@docs view, data, lifetimePercent, direction
 
 
 # Simulation
@@ -341,3 +341,8 @@ lifetimePercent (Particle { lifetime, originalLifetime }) =
 
         _ ->
             1
+
+
+direction : Particle a -> Float
+direction (Particle { velocity }) =
+    atan2 velocity.y velocity.x

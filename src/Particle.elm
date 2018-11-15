@@ -238,9 +238,12 @@ other than gravity! So if you have a concrete use case for going sideways or up,
 [issue]: https://github.com/BrianHicks/elm-particle/issues
 
 -}
-withGravity : Float -> Particle a -> Particle a
-withGravity pxPerSecond (Particle ({ acceleration } as particle)) =
-    Particle { particle | acceleration = { acceleration | y = pxPerSecond } }
+withGravity : Float -> Generator (Particle a) -> Generator (Particle a)
+withGravity pxPerSecond =
+    Random.map
+        (\(Particle ({ acceleration } as particle)) ->
+            Particle { particle | acceleration = { acceleration | y = pxPerSecond } }
+        )
 
 
 {-| **Hey!** You probably shouldn't use this! Instead, manage all your particles

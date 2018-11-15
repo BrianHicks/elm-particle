@@ -150,20 +150,12 @@ particleAt x y =
     Particle.generate genConfetti
         |> Particle.withLifetime (Random.constant 1.5)
         |> Particle.at (Random.constant { x = x, y = y })
-        |> Particle.heading (genHeading 0 400)
+        |> Particle.heading
+            (Random.map2 (\angle speed -> { angle = angle, speed = speed })
+                (normal (degrees 45) (degrees 15))
+                (normal 500 100)
+            )
         |> Particle.withGravity 980
-
-
-genRadius : Generator Float
-genRadius =
-    normal 20 5
-
-
-genHeading : Float -> Float -> Generator { angle : Float, speed : Float }
-genHeading angleCenter powerCenter =
-    Random.map2 (\angle speed -> { angle = degrees angle, speed = speed })
-        (normal angleCenter 15)
-        (normal powerCenter 100)
 
 
 

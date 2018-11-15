@@ -1,5 +1,5 @@
 module Particle exposing
-    ( Particle, generate, at, heading, withGravity
+    ( Particle, generate, withLifetime, at, heading, withGravity
     , view
     , update
     )
@@ -9,7 +9,7 @@ module Particle exposing
 
 # Constructing Particles
 
-@docs Particle, generate, at, heading, withGravity
+@docs Particle, generate, withLifetime, at, heading, withGravity
 
 
 # Rendering Particles

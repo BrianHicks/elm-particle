@@ -1,7 +1,6 @@
 module Confetti exposing (main)
 
 -- TODO: make these confetti particles much nicer, and document this whole thing
--- TODO: oh, and clean up the imports
 
 import Browser exposing (Document)
 import Browser.Events
@@ -15,8 +14,6 @@ import Random.Extra
 import Random.Float exposing (normal)
 import Svg exposing (Svg)
 import Svg.Attributes as SAttrs
-import Task
-import Time exposing (Posix)
 
 
 type alias Model =

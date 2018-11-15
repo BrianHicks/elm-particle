@@ -82,7 +82,7 @@ genConfetti =
 particleAt : Float -> Float -> Generator (Particle Confetti)
 particleAt x y =
     Particle.generate genConfetti
-        |> Particle.withLifetime (Random.constant 1.5)
+        |> Particle.withLifetime (normal 1.5 0.25)
         |> Particle.at (Random.constant { x = x, y = y })
         |> Particle.heading
             (Random.map2 (\angle speed -> { angle = angle, speed = speed })

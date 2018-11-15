@@ -17,11 +17,14 @@ import Svg.Attributes as SAttrs
 
 
 type alias Model =
-    { system : System Confetti }
+    { system : System Confetti
+    , mouse : ( Float, Float )
+    }
 
 
 type Msg
     = Burst Float Float
+    | MouseMove Float Float
     | ParticleMsg (System.Msg Confetti)
 
 
@@ -29,7 +32,12 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Burst x y ->
-            ( { model | system = System.burst (Random.list 25 (particleAt x y)) model.system }
+            ( { model | system = System.burst (Random.list 75 (particleAt x y)) model.system }
+            , Cmd.none
+            )
+
+        MouseMove x y ->
+            ( { model | mouse = ( x, y ) }
             , Cmd.none
             )
 
@@ -41,9 +49,22 @@ update msg model =
 
 view : Model -> Document Msg
 view model =
+    let
+        ( mouseX, mouseY ) =
+            model.mouse
+    in
     { title = "Confetti!"
     , body =
-        [ System.view viewConfetti
+        [ Html.span
+            [ style "position" "absolute"
+            , style "left" (String.fromFloat (mouseX - 40) ++ "px")
+            , style "top" (String.fromFloat (mouseY - 40) ++ "px")
+            , style "cursor" "none"
+            , style "font-size" "80px"
+            , style "user-select" "none"
+            ]
+            [ Html.text "🎉" ]
+        , System.view viewConfetti
             [ style "width" "100%"
             , style "height" "100vh"
             ]
@@ -55,7 +76,7 @@ view model =
 main : Program () Model Msg
 main =
     Browser.document
-        { init = \_ -> ( { system = System.init (Random.initialSeed 0) }, Cmd.none )
+        { init = \_ -> ( { system = System.init (Random.initialSeed 0), mouse = ( 0, 0 ) }, Cmd.none )
         , view = view
         , update = update
         , subscriptions =
@@ -64,6 +85,11 @@ main =
                     [ System.sub [] ParticleMsg model.system
                     , Browser.Events.onClick
                         (Decode.map2 Burst
+                            (Decode.field "clientX" Decode.float)
+                            (Decode.field "clientY" Decode.float)
+                        )
+                    , Browser.Events.onMouseMove
+                        (Decode.map2 MouseMove
                             (Decode.field "clientX" Decode.float)
                             (Decode.field "clientY" Decode.float)
                         )
@@ -149,10 +175,10 @@ particleAt x y =
         |> Particle.at (Random.constant { x = x, y = y })
         |> Particle.heading
             (Random.map2 (\angle speed -> { angle = angle, speed = speed })
-                (normal (degrees 45) (degrees 15))
+                (normal (degrees 47) (degrees 15))
                 (normal 500 100)
             )
-        |> Particle.withGravity 980
+        |> Particle.withGravity 780
 
 
 

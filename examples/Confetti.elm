@@ -128,24 +128,12 @@ view model =
     in
     { title = "Confetti!"
     , body =
-        [ Html.img
-            [ Attrs.src "tada-cone-only.png"
-            , Attrs.width 64
-            , Attrs.height 64
-            , Attrs.alt "\"tada\" emoji from Mutant Standard"
-            , style "position" "absolute"
-            , style "left" (String.fromFloat (mouseX - 20) ++ "px")
-            , style "top" (String.fromFloat (mouseY - 30) ++ "px")
-            , style "user-select" "none"
-            , style "cursor" "none"
-            , style "z-index" "2"
-            ]
-            []
-        , System.view viewConfetti
+        [ System.view viewConfetti
             [ style "width" "100%"
             , style "height" "100vh"
             , style "z-index" "1"
             , style "position" "relative"
+            , style "cursor" "none"
             ]
             model.system
         , Html.img

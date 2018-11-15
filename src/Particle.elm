@@ -1,5 +1,5 @@
 module Particle exposing
-    ( Particle, generate, withLifetime, at, heading, withGravity
+    ( Particle, generate, withLifetime, withLocation, withHeading, withGravity
     , view
     , update
     )
@@ -9,7 +9,7 @@ module Particle exposing
 
 # Constructing Particles
 
-@docs Particle, generate, withLifetime, at, heading, withGravity
+@docs Particle, generate, withLifetime, withLocation, withHeading, withGravity
 
 
 # Rendering Particles
@@ -32,7 +32,7 @@ import Svg.Attributes as Attrs
 
 There are two things to consider:
 
-1.  **where it is** and **how it's moving** (use things like `at` and `heading` below)
+1.  **where it is** and **how it's moving** (use things like `withLocation` and `withHeading` below)
 2.  **what it looks like**... that's what the type parameter is for! Read on!
 
 For example, maybe you want to show some confetti when a student finishes a
@@ -104,8 +104,8 @@ Then, when you're generating particles, you can use `generate` to start your
 pipeline like this:
 
     generate confetti
-        |> at someLocation
-        |> heading someDirection
+        |> withLocation someLocation
+        |> withHeading someDirection
 
 So, why does this need to be a `Random.Generator` of your specific particle?
 Well, it's rarely interesting for 100 particles to be doing exactly the same
@@ -159,12 +159,12 @@ withLifetime =
 the image. So we can render in the center like this:
 
     generate confetti
-        |> at (Random.constant { x = width / 2, y = height / 2 })
+        |> withLocation (Random.constant { x = width / 2, y = height / 2 })
 
 Or at a random location on screen like this:
 
     generate confetti
-        |> at
+        |> withLocation
             (Random.map2 (\x y -> { x = x, y = y })
                 (Random.map (modBy width << abs) Random.float)
                 (Random.map (modBy height << abs) Random.float)
@@ -175,8 +175,8 @@ Or at a random location on screen like this:
 distribution with a clump in the middle and less on the outsides.)
 
 -}
-at : Generator { x : Float, y : Float } -> Generator (Particle a) -> Generator (Particle a)
-at =
+withLocation : Generator { x : Float, y : Float } -> Generator (Particle a) -> Generator (Particle a)
+withLocation =
     Random.map2 (\position (Particle particle) -> Particle { particle | position = position })
 
 
@@ -192,22 +192,22 @@ So if we want our confetti to spray up and to the right, we'll do something
 like:
 
     generate confetti
-        |> heading (Random.constant { speed = 200, angle = radians 1 })
+        |> withHeading (Random.constant { speed = 200, angle = radians 1 })
 
 But like the rest of these, you'll get a nicer-looking result by using
 randomness:
 
     confetti
-        |> Particle.generate 1
-        |> Particle.heading
+        |> generate 1
+        |> withHeading
             (Random.map2 (\speed angle -> { speed = speed, angle = angle })
                 (Random.Float.normal 300 100)
                 (Random.Float.normal (degrees 45) (degrees 10))
             )
 
 -}
-heading : Generator { speed : Float, angle : Float } -> Generator (Particle a) -> Generator (Particle a)
-heading =
+withHeading : Generator { speed : Float, angle : Float } -> Generator (Particle a) -> Generator (Particle a)
+withHeading =
     Random.map2
         (\{ speed, angle } (Particle particle) ->
             Particle
@@ -233,7 +233,7 @@ do this:
         |> withGravity 980
 
 This takes a constant, while its siblings take generators. Why is this? Well,
-unlike position, heading, or lifetime, you probably _do_ want all your particles
+unlike position, withHeading, or lifetime, you probably _do_ want all your particles
 to have the same gravity! (Or at least, you want a few groupings of gravity, not
 every particle being affected differently.)
 

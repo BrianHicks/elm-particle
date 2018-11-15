@@ -179,6 +179,14 @@ main =
 
 viewConfetti : Confetti -> Float -> Svg msg
 viewConfetti confetti lifetime =
+    let
+        opacity =
+            if Debug.log "lifetime" lifetime < 0.1 then
+                lifetime * 10
+
+            else
+                1
+    in
     case confetti of
         Square { color, rotationOffset, rotations } ->
             Svg.rect
@@ -189,7 +197,7 @@ viewConfetti confetti lifetime =
                 , SAttrs.fill (fill color)
                 , SAttrs.stroke (stroke color)
                 , SAttrs.strokeWidth "1px"
-                , SAttrs.opacity <| String.fromFloat <| 1 - cubicBezier 1 0 1 -0.5 lifetime
+                , SAttrs.opacity <| String.fromFloat opacity
                 , SAttrs.transform <| "rotate(" ++ String.fromFloat ((rotations * lifetime + rotationOffset) * 360) ++ ")"
                 ]
                 []
@@ -231,16 +239,3 @@ stroke color =
 
         Blue ->
             "#93A7D8"
-
-
-
--- utils
-
-
-cubicBezier : Float -> Float -> Float -> Float -> Float -> Float
-cubicBezier p0 p1 p2 p3 t =
-    let
-        oneMinusT =
-            1 - t
-    in
-    oneMinusT ^ 3 * p0 + (3 * oneMinusT ^ 2 * t * p1) + (3 * oneMinusT * t ^ 2 * p2) + (t ^ 3 * p3)

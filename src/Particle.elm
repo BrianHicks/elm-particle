@@ -254,8 +254,19 @@ update deltaMs (Particle { data, position, velocity, acceleration, originalLifet
     let
         deltaSeconds =
             deltaMs / 1000
+
+        newLifetime =
+            Maybe.map (\l -> l - deltaSeconds) lifetime
+
+        shouldRemove =
+            case newLifetime of
+                Just l ->
+                    l <= 0
+
+                Nothing ->
+                    False
     in
-    if lifetime - deltaSeconds <= 0 then
+    if shouldRemove then
         Nothing
 
     else
@@ -271,7 +282,7 @@ update deltaMs (Particle { data, position, velocity, acceleration, originalLifet
                 }
             , acceleration = acceleration
             , originalLifetime = originalLifetime
-            , lifetime = Maybe.map (\l -> l - deltaSeconds) lifetime
+            , lifetime = newLifetime
             }
 
 

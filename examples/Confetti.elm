@@ -67,7 +67,7 @@ genSquare =
             ]
         )
         (normal 0 1)
-        (normal 0 1)
+        (normal 2 1)
 
 
 {-| Generate confetti according to the ratios seen in the Apple Color Emoji.

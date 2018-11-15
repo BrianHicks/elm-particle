@@ -145,7 +145,14 @@ system we have for this!
 -}
 withLifetime : Generator Float -> Generator (Particle a) -> Generator (Particle a)
 withLifetime =
-    Random.map2 (\lifetime (Particle particle) -> Particle { particle | lifetime = Just lifetime })
+    Random.map2
+        (\lifetime (Particle particle) ->
+            Particle
+                { particle
+                    | originalLifetime = Just lifetime
+                    , lifetime = Just lifetime
+                }
+        )
 
 
 {-| Where should this particle start? `{ x = 0, y = 0}` is at the top left of

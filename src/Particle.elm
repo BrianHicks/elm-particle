@@ -1,6 +1,5 @@
 module Particle exposing
-    ( Particle, init
-    , Coord, at, heading, withGravity
+    ( Particle, generate, at, heading, withGravity
     , view
     , update
     )
@@ -10,9 +9,7 @@ module Particle exposing
 
 # Constructing Particles
 
-@docs Particle, init
-
-@docs Coord, at, heading, withGravity
+@docs Particle, generate, at, heading, withGravity
 
 
 # Rendering Particles
@@ -58,9 +55,13 @@ type Particle a
         , position : Coord
         , velocity : Coord
         , acceleration : Coord
-        , originalLifetime : Float
-        , lifetime : Float
+        , originalLifetime : Maybe Float
+        , lifetime : Maybe Float
         }
+
+
+type alias Coord =
+    { x : Float, y : Float }
 
 
 
@@ -68,23 +69,30 @@ type Particle a
 
 
 {-| Get a [`Generator Particle`](#Particle), given a `Random.Generator` to use
-to render get the specific data you want it to life and a lifetime in seconds.
-For our `Confetti`, we'd get a yellow diamond that lasts a second and a half by
-calling `init` like this:
+to render get the specific data you want it to have.
 
-    init 1.5
-        (Random.constant { color = Yellow, shape = Diamond })
+For our `Confetti`, we'd get a yellow diamond by calling `generate` like this:
 
-Or we could get a random color and shape with the functions from `Random`:
+    generate (Random.constant { color = Yellow, shape = Diamond })
 
-    init 1.5
+TODO: move at least part of this into the module doc instead of the function doc.
+
+Or we could get a random color and shape by using other functions from `Random`:
+
+    generate
         (Random.map2 (\color shape -> { color = color, shape = shape })
             (Random.uniform Red [ Orange, Yellow, Green, Blue, Purple ])
             (Random.uniform Circle [ Square, Diamond ])
         )
 
-But this API is designed so that you can compose things together by piping
-them. So in your code, it should probably look more like this:
+This will make a `Confetti` which is one of the colors and shapes listed in the
+calls to `Random.uniform`
+
+**Tip!** If you haven't used the `Random` library before, check out [The Elm
+Guide's explanation][teg].
+
+That said, this API is designed so that you can compose things together by
+piping them. So in your code, it should probably look more like this:
 
     confetti : Random.Generator Confetti
     confetti =
@@ -92,17 +100,12 @@ them. So in your code, it should probably look more like this:
             (Random.uniform Red [ Orange, Yellow, Green, Blue, Purple ])
             (Random.uniform Circle [ Square, Diamond ])
 
-Then, when you're generating particles, you can use `init` to start your
+Then, when you're generating particles, you can use `generate` to start your
 pipeline like this:
 
-    confetti
-        |> init 1.5
-
-This will make a `Confetti` which is one of the colors and shapes listed in the
-calls to `Random.uniform`
-
-**Tip!** If you haven't used the `Random` library before, check out [The Elm
-Guide's explanation][teg].
+    generate confetti
+        |> at someLocation
+        |> heading someDirection
 
 So, why does this need to be a `Random.Generator` of your specific particle?
 Well, it's rarely interesting for 100 particles to be doing exactly the same
@@ -112,8 +115,8 @@ a `burst`.
 [teg]: https://guide.elm-lang.org/effects/random.html
 
 -}
-init : Float -> Generator a -> Generator (Particle a)
-init lifetime generator =
+generate : Generator a -> Generator (Particle a)
+generate generator =
     Random.map
         (\data ->
             Particle
@@ -121,31 +124,39 @@ init lifetime generator =
                 , position = { x = 0, y = 0 }
                 , velocity = { x = 0, y = 0 }
                 , acceleration = { x = 0, y = 0 }
-                , originalLifetime = lifetime
-                , lifetime = lifetime
+                , originalLifetime = Nothing
+                , lifetime = Nothing
                 }
         )
         generator
 
 
-{-| Coordinates—since we're using SVG for rendering, the units here are pixels
-from the top left of the image.
+{-| Sometimes, you don't want particles to live forever. It means calculating a
+lot of deltas that you don't care about, and which the person using your
+software will never see. So, let's give them some lifetimes!
+
+    generate confetti
+        |> withLifetime (Random.constant 1)
+
+In the future, it may be possible for `Particle.System.System` to automatically
+remove particles which have gone off screen. For now, lifetimes are the best
+system we have for this!
+
 -}
-type alias Coord =
-    { x : Float, y : Float }
+withLifetime : Generator Float -> Generator (Particle a) -> Generator (Particle a)
+withLifetime =
+    Random.map2 (\lifetime (Particle particle) -> Particle { particle | lifetime = Just lifetime })
 
 
 {-| Where should this particle start? `{ x = 0, y = 0}` is at the top left of
 the image. So we can render in the center like this:
 
-    confetti
-        |> init 1
+    generate confetti
         |> at (Random.constant { x = width / 2, y = height / 2 })
 
 Or at a random location on screen like this:
 
-    confetti
-        |> init 1
+    generate confetti
         |> at
             (Random.map2 (\x y -> { x = x, y = y })
                 (Random.map (modBy width << abs) Random.float)
@@ -170,18 +181,17 @@ pixels per second, so you'll have to experiment. Sorry!
 On the other hand, angle _is_ well-defined: we use the Elm Standard Units™
 (Radians.) `0` is straight up, and rotation goes clockwise.
 
-So if we want our confetti to spray up and to the right just a little bit, we'll
-do something like:
+So if we want our confetti to spray up and to the right, we'll do something
+like:
 
-    confetti
-        |> Particle.init 1
-        |> Particle.heading (Random.constant { speed = 200, angle = degrees 45 })
+    generate confetti
+        |> heading (Random.constant { speed = 200, angle = radians 1 })
 
 But like the rest of these, you'll get a nicer-looking result by using
 randomness:
 
     confetti
-        |> Particle.init 1
+        |> Particle.generate 1
         |> Particle.heading
             (Random.map2 (\speed angle -> { speed = speed, angle = angle })
                 (Random.Float.normal 300 100)
@@ -212,13 +222,20 @@ fast, and you probably want something more cartoony. `980` works well!
 Back to our confetti, we certainly want it to be affected by gravity, so we'll
 do this:
 
-    Particle.init () 1
-        |> Particle.withGravity 980
+    generate confetti
+        |> withGravity 980
 
-(**Note:** under the covers, this is really modeling acceleration over time, so
+This takes a constant, while its siblings take generators. Why is this? Well,
+unlike position, heading, or lifetime, you probably _do_ want all your particles
+to have the same gravity! (Or at least, you want a few groupings of gravity, not
+every particle being affected differently.)
+
+**Note:** under the covers, this is really modeling acceleration over time, so
 it's not _only_ gravity. But, I can't think of anything offhand I need this for
-other than gravity! So if you have a concrete use case for going sideways or
-upwards, open an issue and let me know!)
+other than gravity! So if you have a concrete use case for going sideways or up,
+[open an issue][issue] and let me know!
+
+[issue]: https://github.com/BrianHicks/elm-particle/issues
 
 -}
 withGravity : Float -> Particle a -> Particle a
@@ -226,10 +243,10 @@ withGravity pxPerSecond (Particle ({ acceleration } as particle)) =
     Particle { particle | acceleration = { acceleration | y = pxPerSecond } }
 
 
-{-| Update a single particle, given a delta in milliseconds.
+{-| **Hey!** You probably shouldn't use this! Instead, manage all your particles
+at once with the functions in `Particle.System`!
 
-**Hey!** You probably shouldn't use this! Instead, manage all your particles at
-once with the functions in `Particle.System`!
+That said, this updates a single particle, given a delta in milliseconds.
 
 -}
 update : Float -> Particle a -> Maybe (Particle a)
@@ -254,14 +271,15 @@ update deltaMs (Particle { data, position, velocity, acceleration, originalLifet
                 }
             , acceleration = acceleration
             , originalLifetime = originalLifetime
-            , lifetime = lifetime - deltaSeconds
+            , lifetime = Maybe.map (\l -> l - deltaSeconds) lifetime
             }
 
 
-{-| How should this particle look? Give me a function, to which I'll pass the
-data you gave me in `init` and a value between 1 and 0 representing the percent
-of lifetime this particle has left (this is good things like fading out or
-spinning!) So our confetti might look like this:
+{-| Now that you've generated it, how should this particle look? Give me a
+function, to which I'll pass the data you gave me in `generate` and a value
+between 1 and 0 representing the percent of lifetime this particle has left
+(this is good things like fading out or spinning!) So our confetti might look
+like this:
 
     view
         (\{ color, shape } remainingLifetime ->
@@ -280,6 +298,15 @@ spinning!) So our confetti might look like this:
 -}
 view : (a -> Float -> Svg msg) -> Particle a -> Svg msg
 view viewData (Particle { data, position, originalLifetime, lifetime }) =
+    let
+        lifetimePercent =
+            case ( lifetime, originalLifetime ) of
+                ( Just lifetime_, Just originalLifetime_ ) ->
+                    lifetime_ / originalLifetime_
+
+                _ ->
+                    1
+    in
     Svg.g
         [ Attrs.transform ("translate(" ++ String.fromFloat position.x ++ "," ++ String.fromFloat position.y ++ ")") ]
-        [ viewData data (lifetime / originalLifetime) ]
+        [ viewData data lifetimePercent ]

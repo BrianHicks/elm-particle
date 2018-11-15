@@ -55,8 +55,8 @@ type Particle a
         , position : Coord
         , velocity : Coord
         , acceleration : Coord
-        , originalLifetime : Maybe Float
-        , lifetime : Maybe Float
+        , originalLifetime : Float
+        , lifetime : Float
         }
 
 
@@ -124,8 +124,8 @@ generate generator =
                 , position = { x = 0, y = 0 }
                 , velocity = { x = 0, y = 0 }
                 , acceleration = { x = 0, y = 0 }
-                , originalLifetime = Nothing
-                , lifetime = Nothing
+                , originalLifetime = positiveInfinity
+                , lifetime = positiveInfinity
                 }
         )
         generator
@@ -149,8 +149,8 @@ withLifetime =
         (\lifetime (Particle particle) ->
             Particle
                 { particle
-                    | originalLifetime = Just lifetime
-                    , lifetime = Just lifetime
+                    | originalLifetime = lifetime
+                    , lifetime = lifetime
                 }
         )
 
@@ -264,19 +264,8 @@ update deltaMs (Particle ({ position, velocity, acceleration, lifetime } as part
     let
         deltaSeconds =
             deltaMs / 1000
-
-        newLifetime =
-            Maybe.map (\l -> l - deltaSeconds) lifetime
-
-        shouldRemove =
-            case newLifetime of
-                Just l ->
-                    l <= 0
-
-                Nothing ->
-                    False
     in
-    if shouldRemove then
+    if lifetime < 0 then
         Nothing
 
     else
@@ -292,7 +281,7 @@ update deltaMs (Particle ({ position, velocity, acceleration, lifetime } as part
                 }
             , acceleration = acceleration
             , originalLifetime = particle.originalLifetime
-            , lifetime = newLifetime
+            , lifetime = lifetime - deltaSeconds
             }
 
 
@@ -335,14 +324,19 @@ data (Particle particle) =
 
 lifetimePercent : Particle a -> Float
 lifetimePercent (Particle { lifetime, originalLifetime }) =
-    case ( lifetime, originalLifetime ) of
-        ( Just lifetime_, Just originalLifetime_ ) ->
-            lifetime_ / originalLifetime_
-
-        _ ->
-            1
+    clamp 0 1 <| lifetime / originalLifetime
 
 
 direction : Particle a -> Float
 direction (Particle { velocity }) =
     atan2 velocity.y velocity.x
+
+
+
+-- misc
+
+
+positiveInfinity : Float
+positiveInfinity =
+    -- I hope there's a better way to do this sometime. For now... nope.
+    1 / 0

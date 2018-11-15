@@ -1,6 +1,6 @@
 module Particle exposing
     ( Particle, generate, withLifetime, withLocation, withHeading, withGravity
-    , view
+    , view, data, lifetimePercent
     , update
     )
 
@@ -14,7 +14,7 @@ module Particle exposing
 
 # Rendering Particles
 
-@docs view
+@docs view, data, lifetimePercent
 
 
 # Simulation
@@ -118,9 +118,9 @@ a `burst`.
 generate : Generator a -> Generator (Particle a)
 generate generator =
     Random.map
-        (\data ->
+        (\a ->
             Particle
-                { data = data
+                { data = a
                 , position = { x = 0, y = 0 }
                 , velocity = { x = 0, y = 0 }
                 , acceleration = { x = 0, y = 0 }
@@ -260,7 +260,7 @@ That said, this updates a single particle, given a delta in milliseconds.
 
 -}
 update : Float -> Particle a -> Maybe (Particle a)
-update deltaMs (Particle { data, position, velocity, acceleration, originalLifetime, lifetime }) =
+update deltaMs (Particle ({ position, velocity, acceleration, lifetime } as particle)) =
     let
         deltaSeconds =
             deltaMs / 1000
@@ -281,7 +281,7 @@ update deltaMs (Particle { data, position, velocity, acceleration, originalLifet
 
     else
         (Just << Particle)
-            { data = data
+            { data = particle.data
             , position =
                 { x = position.x + velocity.x * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
                 , y = position.y + velocity.y * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
@@ -291,7 +291,7 @@ update deltaMs (Particle { data, position, velocity, acceleration, originalLifet
                 , y = velocity.y + acceleration.y * deltaSeconds
                 }
             , acceleration = acceleration
-            , originalLifetime = originalLifetime
+            , originalLifetime = particle.originalLifetime
             , lifetime = newLifetime
             }
 
@@ -317,17 +317,27 @@ like this:
         )
 
 -}
-view : (a -> Float -> Svg msg) -> Particle a -> Svg msg
-view viewData (Particle { data, position, originalLifetime, lifetime }) =
-    let
-        lifetimePercent =
-            case ( lifetime, originalLifetime ) of
-                ( Just lifetime_, Just originalLifetime_ ) ->
-                    lifetime_ / originalLifetime_
-
-                _ ->
-                    1
-    in
+view : (Particle a -> Svg msg) -> Particle a -> Svg msg
+view viewData ((Particle { position }) as particle) =
     Svg.g
         [ Attrs.transform ("translate(" ++ String.fromFloat position.x ++ "," ++ String.fromFloat position.y ++ ")") ]
-        [ viewData data lifetimePercent ]
+        [ viewData particle ]
+
+
+
+-- view helpers. TODO: organize me!
+
+
+data : Particle a -> a
+data (Particle particle) =
+    particle.data
+
+
+lifetimePercent : Particle a -> Float
+lifetimePercent (Particle { lifetime, originalLifetime }) =
+    case ( lifetime, originalLifetime ) of
+        ( Just lifetime_, Just originalLifetime_ ) ->
+            lifetime_ / originalLifetime_
+
+        _ ->
+            1

@@ -181,11 +181,17 @@ main =
 -- views
 
 
-viewConfetti : Confetti -> Float -> Svg msg
-viewConfetti confetti lifetime =
+viewConfetti : Particle Confetti -> Svg msg
+viewConfetti particle =
     let
+        confetti =
+            Particle.data particle
+
+        lifetime =
+            Particle.lifetimePercent particle
+
         opacity =
-            if Debug.log "lifetime" lifetime < 0.1 then
+            if lifetime < 0.1 then
                 lifetime * 10
 
             else

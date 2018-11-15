@@ -137,7 +137,7 @@ If you wanted a full-screen particle display, it might look like this:
         system
 
 -}
-view : (a -> Float -> Svg msg) -> List (Html.Attribute msg) -> System a -> Html msg
+view : (Particle a -> Svg msg) -> List (Html.Attribute msg) -> System a -> Html msg
 view viewParticle attrs (System { particles }) =
     Svg.svg attrs (List.map (Particle.view viewParticle) particles)
 

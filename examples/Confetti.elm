@@ -269,7 +269,7 @@ viewConfetti particle =
                 , SAttrs.stroke "black"
                 , SAttrs.strokeWidth "4px"
                 , SAttrs.opacity <| String.fromFloat opacity
-                , SAttrs.transform <| "rotate(" ++ String.fromFloat (Particle.direction particle * 180 / pi) ++ ")"
+                , SAttrs.transform <| "rotate(" ++ String.fromFloat (Particle.directionDegrees particle) ++ ")"
                 ]
                 []
 

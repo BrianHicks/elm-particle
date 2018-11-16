@@ -1,6 +1,6 @@
 module Particle exposing
     ( Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag
-    , view, data, lifetimePercent, direction
+    , view, data, lifetimePercent, direction, directionDegrees
     , update
     )
 
@@ -76,7 +76,7 @@ source on GitHub. Go check those out!
 
 # Rendering Particles
 
-@docs view, data, lifetimePercent, direction
+@docs view, data, lifetimePercent, direction, directionDegrees
 
 
 # Simulation
@@ -339,25 +339,30 @@ withDrag drag =
 -- view helpers
 
 
-{-| Now that you've generated it, how should this particle look? Give me a
-function, to which I'll pass the data you gave me in `generate` and a value
-between 1 and 0 representing the percent of lifetime this particle has left
-(this is good things like fading out or spinning!) So our confetti might look
-like this:
+{-| **Hey!** You should probably be looking at the docs for
+`Particle.System.view`, which has the same signature but works with all your
+particles at once.
 
-    view
-        (\{ color, shape } remainingLifetime ->
-            case shape of
-                Circle ->
-                    Svg.circle
-                        [ Svg.Attributes.r "10"
+Render the particle as SVG. I'll give you the particle, and you use functions
+like [`data`](#data) and [`lifetimePercent`](#lifetimePercent) to get the data
+you need for rendering. It might look like this:
+
+    view <|
+        \particle ->
+            case Particle.data particle of
+                Square { color } ->
+                    Svg.rect
+                        [ Svg.Attributes.width "10"
+                        , Svg.Attributes.height "10"
                         , Svg.Attributes.fill (Color.toHex color)
                         ]
                         []
 
                 _ ->
                     -- other shapes here
-        )
+
+You don't need to set the location of the particle, as it'll be done for you by
+wrapping whatever you pass in a `<g>` element.
 
 -}
 view : (Particle a -> Svg msg) -> Particle a -> Svg msg
@@ -371,19 +376,43 @@ view viewData ((Particle { position }) as particle) =
         [ viewData particle ]
 
 
+{-| Get the data you passed in out of a particle, for use in view functions.
+-}
 data : Particle a -> a
 data (Particle particle) =
     particle.data
 
 
+{-| Get the remaining lifetime of a particle, for use in view functions. This
+returns a number between 0 and 1, which is useful for setting opacity to
+smoothly fade a particle out instead of having it just disappear.
+-}
 lifetimePercent : Particle a -> Float
 lifetimePercent (Particle { lifetime, originalLifetime }) =
     clamp 0 1 <| lifetime / originalLifetime
 
 
+{-| Get the direction the particle is currently facing. This is useful for
+particles whose shape implies a direction, like arrows or boxes.
+
+**Heads up!** The most common use of this function is probably to set rotation
+on the particle. That's fine, but the `rotate` transformation can only use
+degrees, and this function returns radians. Use
+[`directionDegrees`](#directionDegrees) instead so you can avoid doing the math
+yourself.
+
+-}
 direction : Particle a -> Float
 direction (Particle { velocity }) =
     Tuple.second <| toPolar velocity
+
+
+{-| Like `direction` but returns the angle in degrees instead of radians to make
+SVG transformations easier.
+-}
+directionDegrees : Particle a -> Float
+directionDegrees particle =
+    direction particle * 180 / pi
 
 
 

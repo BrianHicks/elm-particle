@@ -335,6 +335,61 @@ withDrag drag =
     Random.map (\(Particle particle) -> Particle { particle | drag = drag particle.data })
 
 
+
+-- view helpers
+
+
+{-| Now that you've generated it, how should this particle look? Give me a
+function, to which I'll pass the data you gave me in `generate` and a value
+between 1 and 0 representing the percent of lifetime this particle has left
+(this is good things like fading out or spinning!) So our confetti might look
+like this:
+
+    view
+        (\{ color, shape } remainingLifetime ->
+            case shape of
+                Circle ->
+                    Svg.circle
+                        [ Svg.Attributes.r "10"
+                        , Svg.Attributes.fill (Color.toHex color)
+                        ]
+                        []
+
+                _ ->
+                    -- other shapes here
+        )
+
+-}
+view : (Particle a -> Svg msg) -> Particle a -> Svg msg
+view viewData ((Particle { position }) as particle) =
+    let
+        ( x, y ) =
+            position
+    in
+    Svg.g
+        [ Attrs.transform ("translate(" ++ String.fromFloat x ++ "," ++ String.fromFloat y ++ ")") ]
+        [ viewData particle ]
+
+
+data : Particle a -> a
+data (Particle particle) =
+    particle.data
+
+
+lifetimePercent : Particle a -> Float
+lifetimePercent (Particle { lifetime, originalLifetime }) =
+    clamp 0 1 <| lifetime / originalLifetime
+
+
+direction : Particle a -> Float
+direction (Particle { velocity }) =
+    Tuple.second <| toPolar velocity
+
+
+
+-- update
+
+
 {-| **Hey!** You probably shouldn't use this! Instead, manage all your particles
 at once with the functions in `Particle.System`!
 
@@ -387,57 +442,6 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
             , originalLifetime = particle.originalLifetime
             , lifetime = lifetime - deltaSeconds
             }
-
-
-{-| Now that you've generated it, how should this particle look? Give me a
-function, to which I'll pass the data you gave me in `generate` and a value
-between 1 and 0 representing the percent of lifetime this particle has left
-(this is good things like fading out or spinning!) So our confetti might look
-like this:
-
-    view
-        (\{ color, shape } remainingLifetime ->
-            case shape of
-                Circle ->
-                    Svg.circle
-                        [ Svg.Attributes.r "10"
-                        , Svg.Attributes.fill (Color.toHex color)
-                        ]
-                        []
-
-                _ ->
-                    -- other shapes here
-        )
-
--}
-view : (Particle a -> Svg msg) -> Particle a -> Svg msg
-view viewData ((Particle { position }) as particle) =
-    let
-        ( x, y ) =
-            position
-    in
-    Svg.g
-        [ Attrs.transform ("translate(" ++ String.fromFloat x ++ "," ++ String.fromFloat y ++ ")") ]
-        [ viewData particle ]
-
-
-
--- view helpers. TODO: organize me!
-
-
-data : Particle a -> a
-data (Particle particle) =
-    particle.data
-
-
-lifetimePercent : Particle a -> Float
-lifetimePercent (Particle { lifetime, originalLifetime }) =
-    clamp 0 1 <| lifetime / originalLifetime
-
-
-direction : Particle a -> Float
-direction (Particle { velocity }) =
-    Tuple.second <| toPolar velocity
 
 
 

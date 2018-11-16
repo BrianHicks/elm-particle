@@ -269,6 +269,67 @@ withGravity pxPerSecond =
     Random.map (\(Particle particle) -> Particle { particle | acceleration = ( 0, pxPerSecond ) })
 
 
+{-| How is this particle affected by the surrounding environment? Is there air?
+Water? Setting the right resistance will help your particles look more
+realistic! You'll have to tweak these numbers to get something you like; here's
+what they mean:
+
+  - **density** is the density of whatever fluid the particles are in. The
+    higher this is, the more particles will be slowed down. Think about trying
+    to run on land versus in the water—you're slowed down much more by the water
+    than the air, and you experience more resistance the faster you try to
+    move. Air will be around 0.001275 (g/cm³). Water will be around 1.
+
+  - **area** is the area of the front surface. For a square, that'd be the side
+    facing into the flow. The bigger this is, the more drag happens. When
+    setting this, remember that this is a 2-dimensional simulation, so you
+    mostly just provide a single dimension's length! In a _real_ simulation,
+    we'd calculate this on every frame to account for rotation. But we can get
+    acceptable results without that, so it's fine to just give a rough number
+    here!
+
+  - **coefficient** is how easily air/water/whatever flows over the surface
+    facing into the flow. A higher number means that you will face more
+    resistance. [Wikipedia][coefficients] has a nice chart of sample
+    coefficients for various surface shapes; choosing one of those will probably
+    get you most of the way there.
+
+This function is a bit different from others because it's really convenient to
+be able to generate whatever kind of particle and set drag separately. You could
+structure your code so that this would not be a concern, but it gets annoying to
+have to care about it it in multiple places. So, if we have these shapes in our
+`Particle Shape`:
+
+    type Shape
+        = Circle Float
+        | Square Float
+
+We'd call `withDrag` like this:
+
+    init shapeGenerator
+        |> withDrag
+            (\shape ->
+                { density = 0.001275
+                , coefficient =
+                    case shape of
+                        Circle _ ->
+                            0.47
+
+                        Square _ ->
+                            1.05
+                , area =
+                    case shape of
+                        Circle radius ->
+                            radius * 2
+
+                        Square side ->
+                            side
+                }
+            )
+
+[coefficients](https://en.wikipedia.org/wiki/Drag_coefficient#/media/File:14ilf1l.svg)
+
+-}
 withDrag : (a -> { density : Float, area : Float, coefficient : Float }) -> Generator (Particle a) -> Generator (Particle a)
 withDrag drag =
     Random.map (\(Particle particle) -> Particle { particle | drag = drag particle.data })

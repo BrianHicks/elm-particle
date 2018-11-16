@@ -206,6 +206,11 @@ viewConfetti particle =
         lifetime =
             Particle.lifetimePercent particle
 
+        -- turns out that opacity is pretty expensive for browsers to calculate,
+        -- and will slow down our framerate if we change it too much. So while
+        -- we *could* do this with, like, a bezier curve or something, we
+        -- actually wnt to just keep it as stable as possible until we actually
+        -- need to fade out at the end.
         opacity =
             if lifetime < 0.1 then
                 lifetime * 10

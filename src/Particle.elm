@@ -245,16 +245,14 @@ withSpeed =
 
 The unit here ends up being pixels per second per second. If you want something
 earthlike, you'll probably want `9.8 * dots/meter`. Buuut that's also super
-fast, and you probably want something more cartoony. `980` works well!
-
-Back to our confetti, we certainly want it to be affected by gravity, so we'll
-do this:
+fast, and you probably want something slightly slower and more cartoony. `980`
+works well!
 
     init confetti
         |> withGravity 980
 
 This takes a constant, while its siblings take generators. Why is this? Well,
-unlike position, withDirection, or lifetime, you probably _do_ want all your particles
+unlike position, heading, or lifetime, you probably _do_ want all your particles
 to have the same gravity! (Or at least, you want a few groupings of gravity, not
 every particle being affected differently.)
 

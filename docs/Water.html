@@ -65,7 +65,18 @@ type alias Droplet =
 droplet : Generator Droplet
 droplet =
     Random.map2 Droplet
-        (Random.uniform "#E3F2FD" [ "#BBDEFB", "#90CAF9", "#64B5F6", "#42A5F5", "#2196F3", "#1E88E5", "#1976D2", "#1565C0", "#0D47A1" ])
+        (Random.uniform "#E3F2FD"
+            [ "#BBDEFB"
+            , "#90CAF9"
+            , "#64B5F6"
+            , "#42A5F5"
+            , "#2196F3"
+            , "#1E88E5"
+            , "#1976D2"
+            , "#1565C0"
+            , "#0D47A1"
+            ]
+        )
         (normal 20 5)
 
 
@@ -77,7 +88,7 @@ waterEmitter : Float -> Generator (List (Particle Droplet))
 waterEmitter delta =
     Particle.init droplet
         |> Particle.withLifetime (Random.constant 1)
-        |> Particle.withLocation (Random.constant { x = 500, y = 500 })
+        |> Particle.withLocation (Random.constant { x = 50, y = 500 })
         |> Particle.withDirection (normal (degrees 45) (degrees 10))
         |> Particle.withSpeed (normal 600 100)
         |> Particle.withGravity 980

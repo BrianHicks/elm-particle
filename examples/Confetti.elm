@@ -10,7 +10,7 @@ which is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike
 
 -}
 
-import Browser exposing (Document)
+import Browser
 import Browser.Events
 import Html exposing (Html)
 import Html.Attributes as Attrs exposing (style)
@@ -272,14 +272,14 @@ fill color =
             "#37CBE8"
 
 
-view : Model -> Document Msg
+view : Model -> Html msg
 view model =
     let
         ( mouseX, mouseY ) =
             model.mouse
     in
-    { title = "Confetti!"
-    , body =
+    Html.main_
+        []
         [ System.view viewConfetti
             [ style "width" "100%"
             , style "height" "100vh"
@@ -302,7 +302,6 @@ view model =
             ]
             []
         ]
-    }
 
 
 
@@ -311,7 +310,7 @@ view model =
 
 main : Program () Model Msg
 main =
-    Browser.document
+    Browser.element
         { init =
             \_ ->
                 ( { system = System.init (Random.initialSeed 0)

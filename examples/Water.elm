@@ -82,7 +82,7 @@ view system =
     Html.main_ []
         [ System.view viewDroplet
             [ style "width" "100%"
-            , style "height" "100vh"
+            , style "height" "98vh"
             ]
             system
         ]

@@ -1,8 +1,12 @@
 module Main exposing (main)
 
-{-| Generate some water coming from a hose or another source. This example
+{-| HEADS UP! You can view this example alongside the running code at
+<https://brianhicks.github.io/elm-particle/Water.html>
+
+Generate some water coming from a hose or another source. This example
 mostly demonstrates emitters, and does just enough generation to get something
 nice looking.
+
 -}
 
 import Browser

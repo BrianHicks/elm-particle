@@ -1,5 +1,13 @@
 module Confetti exposing (main)
 
+{-| We're going to make confetti come out of the party popper emoji: 🎉
+([emojipedia](https://emojipedia.org/party-popper/)) Specifically, we're going
+to lift our style from [Mutant Standard][ms], a wonderful alternate emoji set.
+
+[ms]: https://mutant.tech/
+
+-}
+
 import Browser exposing (Document)
 import Browser.Events
 import Html exposing (Html)
@@ -20,18 +28,24 @@ import Task
 -- Generators!
 
 
-{-| We're going to make confetti come out of the party popper emoji: 🎉
-([emojipedia](https://emojipedia.org/party-popper/))
+{-| So, let's break down what we've got: this emoji is a cone bursting stuff
+towards the upper right (you can see it at `tada.png` in the repo.) We have:
 
-What's it got? Well, in the Mutant Standard Emoji, we've got the cone–which
-we'll render statically–bursting streamers and confetti towards the upper right.
+  - little brightly-colored squares. Looks like they can spin!
+  - longer, wavy, brightly-colored streamers (but we'll just use rectangles here)
+
+Let's model those as a custom type!
 
 -}
 type Confetti
     = Square
         { color : Color
-        , rotationOffset : Float
         , rotations : Float
+
+        -- we add a rotation offset to our rotations when rendering. It looks
+        -- pretty odd if all the particles start or end in the same place, so
+        -- this is part of our random generation.
+        , rotationOffset : Float
         }
     | Streamer
         { color : Color
@@ -39,9 +53,6 @@ type Confetti
         }
 
 
-{-| What color make our little celebration pieces? We'll use a custom type here
-to represent which colors we want, as they have a slightly off-color border.
--}
 type Color
     = Red
     | Pink
@@ -50,17 +61,16 @@ type Color
     | Blue
 
 
-{-| Generate a confetti square, using the color ratios seen in the Mutant
-Standard Emoji.
+{-| Generate a confetti square, using the color ratios seen in Mutant Standard.
 -}
 genSquare : Generator Confetti
 genSquare =
     Random.map3
-        (\color rotationOffset rotations ->
+        (\color rotations rotationOffset ->
             Square
                 { color = color
-                , rotationOffset = rotationOffset
                 , rotations = rotations
+                , rotationOffset = rotationOffset
                 }
         )
         (Random.weighted
@@ -70,10 +80,12 @@ genSquare =
             , ( 2 / 5, Green )
             ]
         )
-        (normal 0 1)
         (normal 1 1)
+        (Random.float 0 1)
 
 
+{-| Generate a streamer, again using those color ratios
+-}
 genStreamer : Generator Confetti
 genStreamer =
     Random.map2
@@ -87,7 +99,7 @@ genStreamer =
         (normal 25 10 |> Random.map (max 10))
 
 
-{-| Generate confetti according to the ratios seen in the Apple Color Emoji.
+{-| Generate confetti according to the ratios in Mutant Standard's tada emoji.
 -}
 genConfetti : Generator Confetti
 genConfetti =
@@ -96,11 +108,20 @@ genConfetti =
         [ ( 3 / 8, genStreamer ) ]
 
 
+{-| We're going to emit particles at the mouse location, so we pass those
+parameters in here and use them without modification.
+-}
 particleAt : Float -> Float -> Generator (Particle Confetti)
 particleAt x y =
     Particle.init genConfetti
         |> Particle.withLifetime (normal 1.5 0.25)
         |> Particle.withLocation (Random.constant { x = x, y = y })
+        -- our direction is determined by the angle of the party popper cone
+        -- (about 47°) as well as it's width (about 60°). We use a normal
+        -- distribution here so that most of the confetti will come out in the
+        -- same place, with falloff to the sides. We want most of the confetti
+        -- to show up in the center 30°, so the standard deviation of the
+        -- distribution should be 15°.
         |> Particle.withDirection (normal (degrees 47) (degrees 15))
         |> Particle.withSpeed (normal 600 100)
         |> Particle.withGravity 980
@@ -143,6 +164,10 @@ update msg model =
     case msg of
         TriggerBurst ->
             ( model
+              -- it looks much nicer to delay the confetti burst a little bit;
+              -- it doesn't all come out at the same time in a real-life party
+              -- popper! But we also want to follow the mouse as it comes out,
+              -- so we're going to just tell the system to burst four times.
             , Cmd.batch
                 [ Process.sleep 0 |> Task.perform (\_ -> BurstAtMouse)
                 , Process.sleep 50 |> Task.perform (\_ -> BurstAtMouse)
@@ -169,59 +194,6 @@ update msg model =
             ( { model | system = System.update particleMsg model.system }
             , Cmd.none
             )
-
-
-view : Model -> Document Msg
-view model =
-    let
-        ( mouseX, mouseY ) =
-            model.mouse
-    in
-    { title = "Confetti!"
-    , body =
-        [ System.view viewConfetti
-            [ style "width" "100%"
-            , style "height" "100vh"
-            , style "z-index" "1"
-            , style "position" "relative"
-            , style "cursor" "none"
-            ]
-            model.system
-        , Html.img
-            [ Attrs.src "tada.png"
-            , Attrs.width 64
-            , Attrs.height 64
-            , Attrs.alt "\"tada\" emoji from Mutant Standard"
-            , style "position" "absolute"
-            , style "left" (String.fromFloat (mouseX - 20) ++ "px")
-            , style "top" (String.fromFloat (mouseY - 30) ++ "px")
-            , style "user-select" "none"
-            , style "cursor" "none"
-            , style "z-index" "0"
-            ]
-            []
-        ]
-    }
-
-
-main : Program () Model Msg
-main =
-    Browser.document
-        { init = \_ -> ( { system = System.init (Random.initialSeed 0), mouse = ( 0, 0 ) }, Cmd.none )
-        , view = view
-        , update = update
-        , subscriptions =
-            \model ->
-                Sub.batch
-                    [ System.sub [] ParticleMsg model.system
-                    , Browser.Events.onClick (Decode.succeed TriggerBurst)
-                    , Browser.Events.onMouseMove
-                        (Decode.map2 MouseMove
-                            (Decode.field "clientX" Decode.float)
-                            (Decode.field "clientY" Decode.float)
-                        )
-                    ]
-        }
 
 
 
@@ -291,3 +263,66 @@ fill color =
 
         Blue ->
             "#37CBE8"
+
+
+view : Model -> Document Msg
+view model =
+    let
+        ( mouseX, mouseY ) =
+            model.mouse
+    in
+    { title = "Confetti!"
+    , body =
+        [ System.view viewConfetti
+            [ style "width" "100%"
+            , style "height" "100vh"
+            , style "z-index" "1"
+            , style "position" "relative"
+            , style "cursor" "none"
+            ]
+            model.system
+        , Html.img
+            [ Attrs.src "tada.png"
+            , Attrs.width 64
+            , Attrs.height 64
+            , Attrs.alt "\"tada\" emoji from Mutant Standard"
+            , style "position" "absolute"
+            , style "left" (String.fromFloat (mouseX - 20) ++ "px")
+            , style "top" (String.fromFloat (mouseY - 30) ++ "px")
+            , style "user-select" "none"
+            , style "cursor" "none"
+            , style "z-index" "0"
+            ]
+            []
+        ]
+    }
+
+
+
+-- tie it all together!
+
+
+main : Program () Model Msg
+main =
+    Browser.document
+        { init =
+            \_ ->
+                ( { system = System.init (Random.initialSeed 0)
+                  , mouse = ( 0, 0 )
+                  }
+                , Cmd.none
+                )
+        , view = view
+        , update = update
+        , subscriptions =
+            \model ->
+                Sub.batch
+                    [ System.sub [] ParticleMsg model.system
+                    , Browser.Events.onClick (Decode.succeed TriggerBurst)
+                    , Browser.Events.onMouseMove
+                        (Decode.map2 MouseMove
+                            (Decode.field "clientX" Decode.float)
+                            (Decode.field "clientY" Decode.float)
+                        )
+                    ]
+        }

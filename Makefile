@@ -5,6 +5,9 @@
 docs: docs/tada.png docs/Confetti.html docs/Water.html
 	touch -m $@
 
+documentation.json: $(shell find src -name '*.elm')
+	elm make --docs=$@
+
 docs/tada.png: examples/tada.png
 	@mkdir -p $(@D)
 	cp $^ $@
@@ -16,6 +19,10 @@ docs/%-demo.html: examples/%.elm
 docs/%.html: examples/%.elm docs/%-demo.html examples/build-doc-page.sh $(shell find src -name '*.elm')
 	@mkdir -p $(@D)
 	./examples/build-doc-page.sh $< > $@
+
+.PHONY: ci
+ci: docs documentation.json
+	elm-format --validate $(shell find src examples -name '*.elm')
 
 .PHONY: clean
 clean:

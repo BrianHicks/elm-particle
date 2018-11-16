@@ -224,6 +224,38 @@ update msg model =
 -- views
 
 
+view : Model -> Html msg
+view model =
+    let
+        ( mouseX, mouseY ) =
+            model.mouse
+    in
+    Html.main_
+        []
+        [ System.view viewConfetti
+            [ style "width" "100%"
+            , style "height" "100vh"
+            , style "z-index" "1"
+            , style "position" "relative"
+            , style "cursor" "none"
+            ]
+            model.system
+        , Html.img
+            [ Attrs.src "tada.png"
+            , Attrs.width 64
+            , Attrs.height 64
+            , Attrs.alt "\"tada\" emoji from Mutant Standard"
+            , style "position" "absolute"
+            , style "left" (String.fromFloat (mouseX - 20) ++ "px")
+            , style "top" (String.fromFloat (mouseY - 30) ++ "px")
+            , style "user-select" "none"
+            , style "cursor" "none"
+            , style "z-index" "0"
+            ]
+            []
+        ]
+
+
 viewConfetti : Particle Confetti -> Svg msg
 viewConfetti particle =
     let
@@ -298,38 +330,6 @@ fill color =
 
         Blue ->
             "#37CBE8"
-
-
-view : Model -> Html msg
-view model =
-    let
-        ( mouseX, mouseY ) =
-            model.mouse
-    in
-    Html.main_
-        []
-        [ System.view viewConfetti
-            [ style "width" "100%"
-            , style "height" "100vh"
-            , style "z-index" "1"
-            , style "position" "relative"
-            , style "cursor" "none"
-            ]
-            model.system
-        , Html.img
-            [ Attrs.src "tada.png"
-            , Attrs.width 64
-            , Attrs.height 64
-            , Attrs.alt "\"tada\" emoji from Mutant Standard"
-            , style "position" "absolute"
-            , style "left" (String.fromFloat (mouseX - 20) ++ "px")
-            , style "top" (String.fromFloat (mouseY - 30) ++ "px")
-            , style "user-select" "none"
-            , style "cursor" "none"
-            , style "z-index" "0"
-            ]
-            []
-        ]
 
 
 

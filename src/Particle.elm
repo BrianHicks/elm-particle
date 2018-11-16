@@ -1,5 +1,5 @@
 module Particle exposing
-    ( Particle, generate, withLifetime, withLocation, withHeading, withGravity, withDrag
+    ( Particle, init, withLifetime, withLocation, withHeading, withGravity, withDrag
     , view, data, lifetimePercent, direction
     , update
     )
@@ -53,9 +53,8 @@ The code ends up looking like this:
 
 So that's the data for rendering your particles, but how do you get them to
 behave how you like? When using `Particle`, you'll create a particle with
-[`generate`](#generate), and then use functions like
-[`withLocation`](#withLocation) and [`withHeading`](#withHeading) to define
-that. Read on for what they do!
+[`init`](#init), and then use functions like [`withLocation`](#withLocation) and
+[`withHeading`](#withHeading) to define that. Read on for what they do!
 
 One last thing before we get into the documentation in earnest: this page only
 scratches the surface of what you can do with particle generators. There are a
@@ -69,7 +68,7 @@ source on GitHub. Go check those out!
 
 # Constructing Particles
 
-@docs Particle, generate, withLifetime, withLocation, withHeading, withGravity, withDrag
+@docs Particle, init, withLifetime, withLocation, withHeading, withGravity, withDrag
 
 
 # Rendering Particles
@@ -114,11 +113,11 @@ type alias Coord =
 {-| Start making a particle, given the data you want to use to render your
 particle (which will also be random!)
 
-    generate confetti
+    init confetti
 
 -}
-generate : Generator a -> Generator (Particle a)
-generate generator =
+init : Generator a -> Generator (Particle a)
+init generator =
     Random.map
         (\a ->
             Particle
@@ -138,7 +137,7 @@ generate generator =
 lot of deltas that you don't care about, and which the person using your
 software will never see. So, let's give them some lifetimes!
 
-    generate confetti
+    init confetti
         |> withLifetime (Random.constant 1)
 
 In the future, it may be possible for `Particle.System.System` to automatically
@@ -161,12 +160,12 @@ withLifetime =
 {-| Where should this particle start? `{ x = 0, y = 0}` is at the top left of
 the image. So we can render in the center like this:
 
-    generate confetti
+    init confetti
         |> withLocation (Random.constant { x = width / 2, y = height / 2 })
 
 Or at a random location on screen like this:
 
-    generate confetti
+    init confetti
         |> withLocation
             (Random.map2 (\x y -> { x = x, y = y })
                 (Random.map (modBy width << abs) Random.float)
@@ -194,14 +193,14 @@ On the other hand, angle _is_ well-defined: we use the Elm Standard Units™
 So if we want our confetti to spray up and to the right, we'll do something
 like:
 
-    generate confetti
+    init confetti
         |> withHeading (Random.constant { speed = 200, angle = radians 1 })
 
 But like the rest of these, you'll get a nicer-looking result by using
 randomness:
 
     confetti
-        |> generate 1
+        |> init 1
         |> withHeading
             (Random.map2 (\speed angle -> { speed = speed, angle = angle })
                 (Random.Float.normal 300 100)
@@ -232,7 +231,7 @@ fast, and you probably want something more cartoony. `980` works well!
 Back to our confetti, we certainly want it to be affected by gravity, so we'll
 do this:
 
-    generate confetti
+    init confetti
         |> withGravity 980
 
 This takes a constant, while its siblings take generators. Why is this? Well,

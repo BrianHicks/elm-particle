@@ -5,7 +5,8 @@ mostly demonstrates emitters, and does just enough generation to get something
 nice looking.
 -}
 
-import Browser exposing (Document)
+import Browser
+import Html exposing (Html)
 import Html.Attributes as Attrs exposing (style)
 import Particle exposing (Particle)
 import Particle.System as System exposing (System)
@@ -20,7 +21,7 @@ call to `System.sub` below, which contains our emitter.
 -}
 main : Program () (System Droplet) (System.Msg Droplet)
 main =
-    Browser.document
+    Browser.element
         { init = \_ -> ( System.init (Random.initialSeed 0), Cmd.none )
         , view = view
         , update = \msg system -> ( System.update msg system, Cmd.none )
@@ -65,17 +66,15 @@ waterEmitter delta =
 -- views
 
 
-view : System Droplet -> Document msg
+view : System Droplet -> Html msg
 view system =
-    { title = "Water!"
-    , body =
+    Html.main_ []
         [ System.view viewDroplet
             [ style "width" "100%"
             , style "height" "100vh"
             ]
             system
         ]
-    }
 
 
 viewDroplet : Particle Droplet -> Svg msg

@@ -113,8 +113,8 @@ type alias Coord =
 -- constructors
 
 
-{-| Start making a particle, given the data you want to use to render your
-particle (which will also be random!)
+{-| Start making a particle, given a generator for the data you want to use to
+render your particle.
 
     init confetti
 
@@ -138,14 +138,25 @@ init generator =
 
 {-| You don't normally want particles to live forever. It means calculating a
 lot of deltas that you don't care about, and which the person using your
-software will never see. So, let's give them some lifetimes!
+software will never see. So, let's give them some lifetimes! The unit here is
+seconds.
 
     init confetti
         |> withLifetime (Random.constant 1)
 
-In the future, it may be possible for `Particle.System.System` to automatically
-remove particles which have gone off screen. For now, lifetimes are the best
-system we have for this!
+We use another `Random.Generator` here, since it looks nicer for particles which
+have been introduced in a burst all at once to fade out progressively instead of
+all at once. You can use `Random.Float.normal` from
+[`elm-community/random-extra`][random-extra] to do this. For example: `normal 1
+0.1`. This generates a normal distribution with a mean of the first number and a
+standard deviation of the second, so it will not be _precisely_ 0.9 to 1.1
+seconds, but `normal` tends to produce pretty good results!
+
+**Note:** In the future, it may be possible for `Particle.System.System` to
+automatically remove particles which have gone off screen. For now, lifetimes
+are the best system we have for this!
+
+[random-extra]: https://package.elm-lang.org/packages/elm-community/random-extra/latest
 
 -}
 withLifetime : Generator Float -> Generator (Particle a) -> Generator (Particle a)
@@ -160,8 +171,8 @@ withLifetime =
         )
 
 
-{-| Where should this particle start? `{ x = 0, y = 0}` is at the top left of
-the image. So we can render in the center like this:
+{-| Where should this particle start it's life? `{ x = 0, y = 0}` is at the top
+left of the image. So we can render in the center like this:
 
     init confetti
         |> withLocation (Random.constant { x = width / 2, y = height / 2 })
@@ -175,25 +186,23 @@ Or at a random location on screen like this:
                 (Random.map (modBy height << abs) Random.float)
             )
 
-(although you may want to check out `Random.Float.normal` from
-`elm-community/random-extra` as it will give you a more "natural-looking"
-distribution with a clump in the middle and less on the outsides.)
-
 -}
 withLocation : Generator { x : Float, y : Float } -> Generator (Particle a) -> Generator (Particle a)
 withLocation =
     Random.map2 (\position (Particle particle) -> Particle { particle | position = position })
 
 
-{-| In which direction should this particle travel, and how fast should it go?
+{-| In what direction should this particle travel, and how fast should it go?
 
-In this case, speed is a rough measurement—it doesn't correspond exactly to
-pixels per second, so you'll have to experiment. Sorry!
+In this case, speed is a rough measurement—it's close to but not exactly pixels
+per second, so you'll have to experiment to make it look good for your use case.
 
 On the other hand, angle _is_ well-defined: we use the Elm Standard Units™
-(Radians.) `0` is straight up, and rotation goes clockwise.
+(radians.) `0` is straight up, and rotation goes clockwise. You can, of course,
+substitute `degrees 45` or `turns 0.125` if that's easier for you to reason
+about—I prefer degrees, myself!
 
-So if we want our confetti to spray up and to the right, we'll do something
+So if we want our particles to spray up and to the right, we'll do something
 like:
 
     init confetti
@@ -202,8 +211,7 @@ like:
 But like the rest of these, you'll get a nicer-looking result by using
 randomness:
 
-    confetti
-        |> init 1
+    init confetti
         |> withHeading
             (Random.map2 (\speed angle -> { speed = speed, angle = angle })
                 (Random.Float.normal 300 100)

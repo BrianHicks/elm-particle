@@ -192,7 +192,7 @@ withLocation =
     Random.map2 (\position (Particle particle) -> Particle { particle | position = ( position.x, position.y ) })
 
 
-{-| In what direction is this particle initially traveling?
+{-| In what direction is this particle traveling, to start?
 
 `withDirection` uses Elm Standard Units™ (radians.) `0` is straight up, and
 rotation goes clockwise. You can, of course, substitute `degrees 45` or `turns
@@ -217,7 +217,7 @@ withDirection =
         )
 
 
-{-| How fast is this particle traveling initially traveling?
+{-| How fast is this particle traveling traveling, to start?
 
 In this case, speed is a rough measurement—it's close to but not exactly pixels
 per second, so you'll have to experiment to make it look good for your use case.

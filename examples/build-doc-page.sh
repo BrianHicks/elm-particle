@@ -7,13 +7,6 @@ if test -z "$SOURCE"; then
     exit 1
 fi
 
-TEMP="$(mktemp /tmp/elm.XXXXXX.js)"
-
-(
-    cd "$(dirname $SOURCE)"
-    elm make --optimize --output="$TEMP" $(basename "$SOURCE") &>/dev/stderr
-)
-
 MODULE="$(basename $SOURCE | cut -f1 -d.)"
 
 cat <<EOF
@@ -27,25 +20,25 @@ cat <<EOF
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/github-gist.min.css">
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0 }
+      body { margin: 0; padding: 0; }
+      main { display: flex; }
+      main > * { flex: 1 1 auto; }
+      pre { max-width: 50%; overflow-y: scroll; height: 100vh; padding: 10px; }
+      iframe { border: 0; }
+    </style>
   </head>
-  <body style="margin: 0; padding: 0;">
-    <main style="display: flex">
-      <pre style="max-width: 50%; overflow-y: scroll; height: 100vh; padding: 10px;"><code class="elm">
+  <body>
+    <main>
+      <pre><code class="elm">
 $(cat $SOURCE)
       </code></pre>
-      <section id="demo"></section>
+      <iframe src="./${MODULE}-demo.html"></iframe>
     </main>
-    <script>
-$(cat $TEMP)
-    </script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/languages/elm.min.js"></script>
-    <script>
-      hljs.initHighlightingOnLoad();
-      Elm.${MODULE}.init({node: document.getElementById("demo")});
-    </script>
+    <script>hljs.initHighlightingOnLoad();</script>
   </body>
 </html>
 EOF
-
-rm "$TEMP"

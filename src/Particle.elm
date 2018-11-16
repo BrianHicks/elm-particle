@@ -1,5 +1,5 @@
 module Particle exposing
-    ( Particle, generate, withLifetime, withLocation, withHeading, withGravity
+    ( Particle, generate, withLifetime, withLocation, withHeading, withGravity, withDrag
     , view, data, lifetimePercent, direction
     , update
     )
@@ -9,7 +9,7 @@ module Particle exposing
 
 # Constructing Particles
 
-@docs Particle, generate, withLifetime, withLocation, withHeading, withGravity
+@docs Particle, generate, withLifetime, withLocation, withHeading, withGravity, withDrag
 
 
 # Rendering Particles
@@ -55,6 +55,7 @@ type Particle a
         , position : Coord
         , velocity : Coord
         , acceleration : Coord
+        , drag : { density : Float, area : Float, coefficient : Float }
         , originalLifetime : Float
         , lifetime : Float
         }
@@ -124,6 +125,7 @@ generate generator =
                 , position = { x = 0, y = 0 }
                 , velocity = { x = 0, y = 0 }
                 , acceleration = { x = 0, y = 0 }
+                , drag = { density = 0, area = 0, coefficient = 0 }
                 , originalLifetime = positiveInfinity
                 , lifetime = positiveInfinity
                 }
@@ -253,6 +255,11 @@ withGravity pxPerSecond =
         )
 
 
+withDrag : (a -> { density : Float, area : Float, coefficient : Float }) -> Generator (Particle a) -> Generator (Particle a)
+withDrag drag =
+    Random.map (\(Particle particle) -> Particle { particle | drag = drag particle.data })
+
+
 {-| **Hey!** You probably shouldn't use this! Instead, manage all your particles
 at once with the functions in `Particle.System`!
 
@@ -260,10 +267,22 @@ That said, this updates a single particle, given a delta in milliseconds.
 
 -}
 update : Float -> Particle a -> Maybe (Particle a)
-update deltaMs (Particle ({ position, velocity, acceleration, lifetime } as particle)) =
+update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } as particle)) =
     let
         deltaSeconds =
             deltaMs / 1000
+
+        dragAtVelocity : Float -> Float
+        dragAtVelocity v =
+            drag.coefficient * drag.area * 0.5 * drag.density * v * v
+
+        applyDrag : Float -> Float
+        applyDrag v =
+            if v > 0 then
+                v - dragAtVelocity v * deltaSeconds
+
+            else
+                v + dragAtVelocity (abs v) * deltaSeconds
     in
     if lifetime < 0 then
         Nothing
@@ -276,10 +295,11 @@ update deltaMs (Particle ({ position, velocity, acceleration, lifetime } as part
                 , y = position.y + velocity.y * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
                 }
             , velocity =
-                { x = velocity.x + acceleration.x * deltaSeconds
-                , y = velocity.y + acceleration.y * deltaSeconds
+                { x = velocity.x + acceleration.x * deltaSeconds |> applyDrag
+                , y = velocity.y + acceleration.y * deltaSeconds |> applyDrag
                 }
             , acceleration = acceleration
+            , drag = drag
             , originalLifetime = particle.originalLifetime
             , lifetime = lifetime - deltaSeconds
             }

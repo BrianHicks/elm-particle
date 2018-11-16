@@ -84,7 +84,7 @@ genStreamer =
                 }
         )
         (Random.uniform Pink [ Yellow, Blue ])
-        (normal 25 10)
+        (normal 25 10 |> Random.map (max 10))
 
 
 {-| Generate confetti according to the ratios seen in the Apple Color Emoji.
@@ -104,9 +104,28 @@ particleAt x y =
         |> Particle.withHeading
             (Random.map2 (\angle speed -> { angle = angle, speed = speed })
                 (normal (degrees 47) (degrees 15))
-                (normal 500 100)
+                (normal 600 100)
             )
         |> Particle.withGravity 980
+        |> Particle.withDrag
+            (\confetti ->
+                { density = 0.001226
+                , coefficient =
+                    case confetti of
+                        Square _ ->
+                            1.15
+
+                        Streamer _ ->
+                            0.85
+                , area =
+                    case confetti of
+                        Square _ ->
+                            1
+
+                        Streamer { length } ->
+                            toFloat length / 10
+                }
+            )
 
 
 type alias Model =

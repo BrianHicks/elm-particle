@@ -7,6 +7,66 @@ module Particle exposing
 {-|
 
 
+# Particle
+
+This module lets you particles! You'll need to define:
+
+1.  **how it acts**, using things like [`withLocation`](#withLocation) and
+    [`withHeading`](#withHeading).
+2.  **what it looks like**, which you'll provide in the type parameter to
+    [`Particle`](#Particle).
+
+For example, maybe you want to show some confetti when a student finishes a
+quiz. Hooray! Time to celebrate! 🎉 🎊 We'll model each little piece as having
+both a color and a shape, like this:
+
+    type alias Confetti =
+        { color : Color -- Red, Green, Blue
+        , shape : Shape -- Square, Star, Streamer
+        }
+
+Then a `Particle` of confetti—just one of those little pieces—would be `Particle
+Confetti`. Boring, but in the best way possible! Now, we _could_ construct our
+confetti by hand, like this:
+
+    { color = Red, shape = Square }
+
+… but that's boring! Not only do we have to do every piece we want by hand, but
+since all functions in Elm are pure we will never get any variation! Boo!
+Instead, we'll generate Confetti randomly using [`elm/random`][random]. If you
+haven't used this package before, check out [The Elm Guide's explanation][teg],
+or [Chandrika Achar's appearance on Elm Town][chandrika-achar]. We'll use
+`Random.map2` and `Random.uniform` to generate particles of a random color and
+shape:
+
+  - `Random.uniform` takes a bunch of items, and chooses between them evenly.
+  - `Random.map2` takes the random stuff you generate, and gives it as two
+    arguments to a function.
+
+The code ends up looking like this:
+
+    confetti : Random.Generator Confetti
+    confetti =
+        Random.map2 Confetti
+            (Random.uniform Red [ Green, Blue ])
+            (Random.uniform Square [ Star, Streamer ])
+
+So that's the data for rendering your particles, but how do you get them to
+behave how you like? When using `Particle`, you'll create a particle with
+[`generate`](#generate), and then use functions like
+[`withLocation`](#withLocation) and [`withHeading`](#withHeading) to define
+that. Read on for what they do!
+
+One last thing before we get into the documentation in earnest: this page only
+scratches the surface of what you can do with particle generators. There are a
+few fully-worked-out and documented examples in the `examples` folder of the
+source on GitHub. Go check those out!
+
+[teg]: https://guide.elm-lang.org/effects/random.html
+[random]: https://package.elm-lang.org/packages/elm/random/latest/
+[chandrika-achar]: https://elmtown.simplecast.fm/randomness-chandrika
+
+
 # Constructing Particles
 
 @docs Particle, generate, withLifetime, withLocation, withHeading, withGravity, withDrag
@@ -29,25 +89,7 @@ import Svg.Attributes as Attrs
 
 
 {-| A single particle, doing... something? Who knows! You get to define that!
-
-There are two things to consider:
-
-1.  **where it is** and **how it's moving** (use things like `withLocation` and `withHeading` below)
-2.  **what it looks like**... that's what the type parameter is for! Read on!
-
-For example, maybe you want to show some confetti when a student finishes a
-quiz. Hooray! We'll model each little piece as having both a color and a shape,
-like this:
-
-    type alias Confetti =
-        { color : Color
-        , shape : Shape -- like Circle, Square, Diamond, etc
-        }
-
-Then a `Particle` of confetti—just one of those little pieces—would be `Particle
-Confetti`. Boring, but in the best way possible! You'll get to see this data
-again in `view` when you render your particle.
-
+See the top of the module docs for how this all fits together.
 -}
 type Particle a
     = Particle
@@ -69,51 +111,10 @@ type alias Coord =
 -- constructors
 
 
-{-| Get a [`Generator Particle`](#Particle), given a `Random.Generator` to use
-to render get the specific data you want it to have.
-
-For our `Confetti`, we'd get a yellow diamond by calling `generate` like this:
-
-    generate (Random.constant { color = Yellow, shape = Diamond })
-
-TODO: move at least part of this into the module doc instead of the function doc.
-
-Or we could get a random color and shape by using other functions from `Random`:
-
-    generate
-        (Random.map2 (\color shape -> { color = color, shape = shape })
-            (Random.uniform Red [ Orange, Yellow, Green, Blue, Purple ])
-            (Random.uniform Circle [ Square, Diamond ])
-        )
-
-This will make a `Confetti` which is one of the colors and shapes listed in the
-calls to `Random.uniform`
-
-**Tip!** If you haven't used the `Random` library before, check out [The Elm
-Guide's explanation][teg].
-
-That said, this API is designed so that you can compose things together by
-piping them. So in your code, it should probably look more like this:
-
-    confetti : Random.Generator Confetti
-    confetti =
-        Random.map2 (\color shape -> { color = color, shape = shape })
-            (Random.uniform Red [ Orange, Yellow, Green, Blue, Purple ])
-            (Random.uniform Circle [ Square, Diamond ])
-
-Then, when you're generating particles, you can use `generate` to start your
-pipeline like this:
+{-| Start making a particle, given the data you want to use to render your
+particle (which will also be random!)
 
     generate confetti
-        |> withLocation someLocation
-        |> withHeading someDirection
-
-So, why does this need to be a `Random.Generator` of your specific particle?
-Well, it's rarely interesting for 100 particles to be doing exactly the same
-thing. And, in fact, they'll all appear like on particle if you release them in
-a `burst`.
-
-[teg]: https://guide.elm-lang.org/effects/random.html
 
 -}
 generate : Generator a -> Generator (Particle a)
@@ -133,7 +134,7 @@ generate generator =
         generator
 
 
-{-| Sometimes, you don't want particles to live forever. It means calculating a
+{-| You don't normally want particles to live forever. It means calculating a
 lot of deltas that you don't care about, and which the person using your
 software will never see. So, let's give them some lifetimes!
 

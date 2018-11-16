@@ -145,8 +145,10 @@ Then you'd use this in your subscription like this:
 
     sub [ waterEmitter ] ParticleMsg model.system
 
-If this doesn't make sense, go read the `Water.elm` example, which ties all of
-this together.
+If this doesn't make sense, go read the [`Water.elm`][water] example, which ties
+all of this together.
+
+[water]: https://brianhicks.github.io/elm-particle/Water.html
 
 -}
 sub : List (Float -> Generator (List (Particle a))) -> (Msg a -> msg) -> System a -> Sub msg

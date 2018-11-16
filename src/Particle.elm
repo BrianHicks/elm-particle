@@ -61,12 +61,13 @@ render these—you don't have to worry about animation yourself!
 
 One last thing before we get into the documentation in earnest: this page only
 scratches the surface of what you can do with particle generators. There are a
-few fully-worked-out and documented examples in the `examples` folder of the
-source on GitHub. Go check those out!
+few fully-worked-out and documented examples in the [`examples`][examples]
+folder of the source on GitHub. Go check those out!
 
 [teg]: https://guide.elm-lang.org/effects/random.html
 [random]: https://package.elm-lang.org/packages/elm/random/latest/
 [chandrika-achar]: https://elmtown.simplecast.fm/randomness-chandrika
+[examples]: https://github.com/BrianHicks/elm-particle/tree/master/examples
 
 
 # Constructing Particles

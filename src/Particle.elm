@@ -1,5 +1,5 @@
 module Particle exposing
-    ( Particle, init, withLifetime, withLocation, withHeading, withGravity, withDrag
+    ( Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag
     , view, data, lifetimePercent, direction
     , update
     )
@@ -12,7 +12,7 @@ module Particle exposing
 This module lets you particles! You'll need to define:
 
 1.  **how it acts**, using things like [`withLocation`](#withLocation) and
-    [`withHeading`](#withHeading).
+    [`withDirection`](#withDirection).
 2.  **what it looks like**, which you'll provide in the type parameter to
     [`Particle`](#Particle).
 
@@ -54,7 +54,7 @@ The code ends up looking like this:
 So that's the data for rendering your particles, but how do you get them to
 behave how you like? When using `Particle`, you'll create a particle with
 [`init`](#init), and then use functions like [`withLocation`](#withLocation) and
-[`withHeading`](#withHeading) to define that. Read on for what they do!
+[`withDirection`](#withDirection) to define that. Read on for what they do!
 
 You should also read the documentation on `Particle.System` for a managed way to
 render these—you don't have to worry about animation yourself!
@@ -71,7 +71,7 @@ source on GitHub. Go check those out!
 
 # Constructing Particles
 
-@docs Particle, init, withLifetime, withLocation, withHeading, withGravity, withDrag
+@docs Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag
 
 
 # Rendering Particles
@@ -96,9 +96,9 @@ See the top of the module docs for how this all fits together.
 type Particle a
     = Particle
         { data : a
-        , position : Coord
-        , velocity : Coord
-        , acceleration : Coord
+        , position : ( Float, Float )
+        , velocity : ( Float, Float )
+        , acceleration : ( Float, Float )
         , drag : { density : Float, area : Float, coefficient : Float }
         , originalLifetime : Float
         , lifetime : Float
@@ -125,9 +125,9 @@ init generator =
         (\a ->
             Particle
                 { data = a
-                , position = { x = 0, y = 0 }
-                , velocity = { x = 0, y = 0 }
-                , acceleration = { x = 0, y = 0 }
+                , position = ( 0, 0 )
+                , velocity = ( 1, 0 )
+                , acceleration = ( 0, 0 )
                 , drag = { density = 0, area = 0, coefficient = 0 }
                 , originalLifetime = positiveInfinity
                 , lifetime = positiveInfinity
@@ -189,46 +189,54 @@ Or at a random location on screen like this:
 -}
 withLocation : Generator { x : Float, y : Float } -> Generator (Particle a) -> Generator (Particle a)
 withLocation =
-    Random.map2 (\position (Particle particle) -> Particle { particle | position = position })
+    Random.map2 (\position (Particle particle) -> Particle { particle | position = ( position.x, position.y ) })
 
 
-{-| In what direction should this particle travel, and how fast should it go?
+{-| In what direction is this particle initially traveling?
+
+`withDirection` uses Elm Standard Units™ (radians.) `0` is straight up, and
+rotation goes clockwise. You can, of course, substitute `degrees 45` or `turns
+0.125` if that's easier for you to reason about—I prefer degrees, myself!
+
+    init confetti
+        |> withDirection (Random.Float.normal (degrees 45) (degrees 10))
+
+-}
+withDirection : Generator Float -> Generator (Particle a) -> Generator (Particle a)
+withDirection =
+    Random.map2
+        (\angle (Particle particle) ->
+            Particle
+                { particle
+                    | velocity =
+                        particle.velocity
+                            |> toPolar
+                            |> Tuple.mapSecond (\_ -> angle - degrees 90)
+                            |> fromPolar
+                }
+        )
+
+
+{-| How fast is this particle traveling initially traveling?
 
 In this case, speed is a rough measurement—it's close to but not exactly pixels
 per second, so you'll have to experiment to make it look good for your use case.
 
-On the other hand, angle _is_ well-defined: we use the Elm Standard Units™
-(radians.) `0` is straight up, and rotation goes clockwise. You can, of course,
-substitute `degrees 45` or `turns 0.125` if that's easier for you to reason
-about—I prefer degrees, myself!
-
-So if we want our particles to spray up and to the right, we'll do something
-like:
-
     init confetti
-        |> withHeading (Random.constant { speed = 200, angle = radians 1 })
-
-But like the rest of these, you'll get a nicer-looking result by using
-randomness:
-
-    init confetti
-        |> withHeading
-            (Random.map2 (\speed angle -> { speed = speed, angle = angle })
-                (Random.Float.normal 300 100)
-                (Random.Float.normal (degrees 45) (degrees 10))
-            )
+        |> withSpeed (Random.Float.normal 300 100)
 
 -}
-withHeading : Generator { speed : Float, angle : Float } -> Generator (Particle a) -> Generator (Particle a)
-withHeading =
+withSpeed : Generator Float -> Generator (Particle a) -> Generator (Particle a)
+withSpeed =
     Random.map2
-        (\{ speed, angle } (Particle particle) ->
+        (\speed (Particle particle) ->
             Particle
                 { particle
                     | velocity =
-                        { x = speed * cos (angle - degrees 90)
-                        , y = speed * sin (angle - degrees 90)
-                        }
+                        particle.velocity
+                            |> toPolar
+                            |> Tuple.mapFirst (\_ -> speed)
+                            |> fromPolar
                 }
         )
 
@@ -246,7 +254,7 @@ do this:
         |> withGravity 980
 
 This takes a constant, while its siblings take generators. Why is this? Well,
-unlike position, withHeading, or lifetime, you probably _do_ want all your particles
+unlike position, withDirection, or lifetime, you probably _do_ want all your particles
 to have the same gravity! (Or at least, you want a few groupings of gravity, not
 every particle being affected differently.)
 
@@ -260,10 +268,7 @@ other than gravity! So if you have a concrete use case for going sideways or up,
 -}
 withGravity : Float -> Generator (Particle a) -> Generator (Particle a)
 withGravity pxPerSecond =
-    Random.map
-        (\(Particle ({ acceleration } as particle)) ->
-            Particle { particle | acceleration = { acceleration | y = pxPerSecond } }
-        )
+    Random.map (\(Particle particle) -> Particle { particle | acceleration = ( 0, pxPerSecond ) })
 
 
 withDrag : (a -> { density : Float, area : Float, coefficient : Float }) -> Generator (Particle a) -> Generator (Particle a)
@@ -294,6 +299,15 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
 
             else
                 v + dragAtVelocity (abs v) * deltaSeconds
+
+        ( positionX, positionY ) =
+            position
+
+        ( accelerationX, accelerationY ) =
+            acceleration
+
+        ( velocityX, velocityY ) =
+            velocity
     in
     if lifetime < 0 then
         Nothing
@@ -302,13 +316,13 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
         (Just << Particle)
             { data = particle.data
             , position =
-                { x = position.x + velocity.x * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
-                , y = position.y + velocity.y * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
-                }
+                ( positionX + velocityX * deltaSeconds + accelerationX * deltaSeconds * deltaSeconds / 2
+                , positionY + velocityY * deltaSeconds + accelerationY * deltaSeconds * deltaSeconds / 2
+                )
             , velocity =
-                { x = velocity.x + acceleration.x * deltaSeconds |> applyDrag
-                , y = velocity.y + acceleration.y * deltaSeconds |> applyDrag
-                }
+                ( velocityX + accelerationX * deltaSeconds |> applyDrag
+                , velocityY + accelerationY * deltaSeconds |> applyDrag
+                )
             , acceleration = acceleration
             , drag = drag
             , originalLifetime = particle.originalLifetime
@@ -339,8 +353,12 @@ like this:
 -}
 view : (Particle a -> Svg msg) -> Particle a -> Svg msg
 view viewData ((Particle { position }) as particle) =
+    let
+        ( x, y ) =
+            position
+    in
     Svg.g
-        [ Attrs.transform ("translate(" ++ String.fromFloat position.x ++ "," ++ String.fromFloat position.y ++ ")") ]
+        [ Attrs.transform ("translate(" ++ String.fromFloat x ++ "," ++ String.fromFloat y ++ ")") ]
         [ viewData particle ]
 
 
@@ -360,7 +378,7 @@ lifetimePercent (Particle { lifetime, originalLifetime }) =
 
 direction : Particle a -> Float
 direction (Particle { velocity }) =
-    atan2 velocity.y velocity.x
+    Tuple.second <| toPolar velocity
 
 
 

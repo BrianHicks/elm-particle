@@ -98,14 +98,11 @@ genConfetti =
 
 particleAt : Float -> Float -> Generator (Particle Confetti)
 particleAt x y =
-    Particle.generate genConfetti
+    Particle.init genConfetti
         |> Particle.withLifetime (normal 1.5 0.25)
         |> Particle.withLocation (Random.constant { x = x, y = y })
-        |> Particle.withHeading
-            (Random.map2 (\angle speed -> { angle = angle, speed = speed })
-                (normal (degrees 47) (degrees 15))
-                (normal 600 100)
-            )
+        |> Particle.withDirection (normal (degrees 47) (degrees 15))
+        |> Particle.withSpeed (normal 600 100)
         |> Particle.withGravity 980
         |> Particle.withDrag
             (\confetti ->

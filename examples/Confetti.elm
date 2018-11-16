@@ -2,7 +2,9 @@ module Confetti exposing (main)
 
 {-| We're going to make confetti come out of the party popper emoji: 🎉
 ([emojipedia](https://emojipedia.org/party-popper/)) Specifically, we're going
-to lift our style from [Mutant Standard][ms], a wonderful alternate emoji set.
+to lift our style from [Mutant Standard][ms], a wonderful alternate emoji set,
+which is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike
+4.0 International License.
 
 [ms]: https://mutant.tech/
 

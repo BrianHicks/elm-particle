@@ -12,7 +12,6 @@ TEMP="$(mktemp /tmp/elm.XXXXXX.js)"
 (
     cd "$(dirname $SOURCE)"
     elm make --optimize --output="$TEMP" $(basename "$SOURCE") &>/dev/stderr
-    cat "$TEMP"
 )
 
 MODULE="$(basename $SOURCE | cut -f1 -d.)"

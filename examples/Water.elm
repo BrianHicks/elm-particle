@@ -1,25 +1,36 @@
-module Main exposing (Model, Msg(..), main, update, view)
+module Main exposing (main)
 
--- TODO: make these water droplets a bit nicer, and document this whole thing
--- TODO: oh, and clean up the imports
+{-| Generate some water coming from a hose or another source. This example
+mostly demonstrates emitters, and does just enough generation to get something
+nice looking.
+-}
 
 import Browser exposing (Document)
-import Browser.Events
-import Html exposing (Html)
 import Html.Attributes as Attrs exposing (style)
-import Json.Decode as Decode
 import Particle exposing (Particle)
 import Particle.System as System exposing (System)
 import Random exposing (Generator)
 import Random.Float exposing (normal)
 import Svg exposing (Svg)
 import Svg.Attributes as SAttrs
-import Task
-import Time exposing (Posix)
 
 
-type alias Model =
-    { system : System Droplet }
+{-| This `main` is as minimal as possible. The thing to pay attention to is the
+call to `System.sub` below, which contains our emitter.
+-}
+main : Program () (System Droplet) (System.Msg Droplet)
+main =
+    Browser.document
+        { init = \_ -> ( System.init (Random.initialSeed 0), Cmd.none )
+        , view = view
+        , update = \msg system -> ( System.update msg system, Cmd.none )
+        , subscriptions =
+            \system -> System.sub [ waterEmitter ] identity system
+        }
+
+
+
+-- emitters
 
 
 type alias Droplet =
@@ -28,94 +39,54 @@ type alias Droplet =
     }
 
 
-type Msg
-    = ParticleMsg (System.Msg Droplet)
+droplet : Generator Droplet
+droplet =
+    Random.map2 Droplet
+        (Random.uniform "#E3F2FD" [ "#BBDEFB", "#90CAF9", "#64B5F6", "#42A5F5", "#2196F3", "#1E88E5", "#1976D2", "#1565C0", "#0D47A1" ])
+        (normal 20 5)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        ParticleMsg particleMsg ->
-            ( { model | system = System.update particleMsg model.system }
-            , Cmd.none
-            )
-
-
-view : Model -> Document Msg
-view model =
-    { title = "Water!"
-    , body =
-        [ System.view viewDroplet
-            [ style "width" "100%"
-            , style "height" "100vh"
-            ]
-            model.system
-        ]
-    }
-
-
-main : Program () Model Msg
-main =
-    Browser.document
-        { init = \_ -> ( { system = System.init (Random.initialSeed 0) }, Cmd.none )
-        , view = view
-        , update = update
-        , subscriptions =
-            \model -> Sub.batch [ System.sub [ waterEmitter ] ParticleMsg model.system ]
-        }
-
-
-
--- emitters
-
-
+{-| Emitters take the delta (in milliseconds )since the last update. This is so
+you can emit the right number of particles. This emitter emits about 60
+particles per second.
+-}
 waterEmitter : Float -> Generator (List (Particle Droplet))
 waterEmitter delta =
-    Random.list (ceiling (delta / 1000))
-        (Random.map3
-            (\heading color radius ->
-                Particle.init (Droplet color radius) 1
-                    |> Particle.at { x = 500, y = 500 }
-                    |> Particle.heading heading
-                    |> Particle.withGravity 980
-            )
-            (genHeading 45 600)
-            genColor
-            genRadius
-        )
-
-
-
--- generators
-
-
-genColor : Generator String
-genColor =
-    Random.uniform "#E3F2FD" [ "#BBDEFB", "#90CAF9", "#64B5F6", "#42A5F5", "#2196F3", "#1E88E5", "#1976D2", "#1565C0", "#0D47A1" ]
-
-
-genRadius : Generator Float
-genRadius =
-    normal 20 5
-
-
-genHeading : Float -> Float -> Generator { angle : Float, speed : Float }
-genHeading angleCenter powerCenter =
-    Random.map2 (\angle speed -> { angle = degrees angle, speed = speed })
-        (normal angleCenter 10)
-        (normal powerCenter 100)
+    Particle.init droplet
+        |> Particle.withLifetime (Random.constant 1)
+        |> Particle.withLocation (Random.constant { x = 500, y = 500 })
+        |> Particle.withDirection (normal (degrees 45) (degrees 10))
+        |> Particle.withSpeed (normal 600 100)
+        |> Particle.withGravity 980
+        |> Random.list (ceiling (delta * (60 / 1000)))
 
 
 
 -- views
 
 
-viewDroplet : Droplet -> Float -> Svg msg
-viewDroplet { color, radius } lifetime =
+view : System Droplet -> Document msg
+view system =
+    { title = "Water!"
+    , body =
+        [ System.view viewDroplet
+            [ style "width" "100%"
+            , style "height" "100vh"
+            ]
+            system
+        ]
+    }
+
+
+viewDroplet : Particle Droplet -> Svg msg
+viewDroplet particle =
+    let
+        { color, radius } =
+            Particle.data particle
+    in
     Svg.circle
         [ SAttrs.r (String.fromFloat radius)
         , SAttrs.fill color
-        , SAttrs.opacity <| String.fromFloat <| 1 - cubicBezier 1 0.01 0.92 -0.5 lifetime
         ]
         []
 

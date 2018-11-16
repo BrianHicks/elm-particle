@@ -9,11 +9,19 @@ elm install BrianHicks/elm-particle
 
 ## Getting Started
 
-Here's a minimal app which demonstrates using `elm-particle`:
+The general overview of elm-particle:
 
-```elm
--- TODO
-```
+1. Create a Random generator for the types of particles you want.
+2. Combine those to make effects, like confetti bursting or a stream of water.
+3. Give those to a system which manages random seeds and animation frame subscriptions for you!
+
+You can see fully worked examples online:
+
+- 🎉 [Confetti](https://brianhicks.github.io/elm-particle/Confetti.html)
+- 🚰 [Water](https://brianhicks.github.io/elm-particle/Water.html)
+- 🎇 [A Simple Firework](https://brianhicks.github.io/elm-particle/Firework.html)
+
+The source for these examples all live in the `examples` directory on GitHub.
 
 ## License
 

@@ -28,7 +28,6 @@ import Html exposing (Html)
 import Particle exposing (Particle)
 import Random exposing (Generator)
 import Svg exposing (Svg)
-import Time
 
 
 {-| Hold and simulate all your particles at once! This is a whole lot easier

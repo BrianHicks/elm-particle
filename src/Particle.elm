@@ -56,6 +56,9 @@ behave how you like? When using `Particle`, you'll create a particle with
 [`init`](#init), and then use functions like [`withLocation`](#withLocation) and
 [`withHeading`](#withHeading) to define that. Read on for what they do!
 
+You should also read the documentation on `Particle.System` for a managed way to
+render these—you don't have to worry about animation yourself!
+
 One last thing before we get into the documentation in earnest: this page only
 scratches the surface of what you can do with particle generators. There are a
 few fully-worked-out and documented examples in the `examples` folder of the

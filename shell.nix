@@ -7,9 +7,10 @@ with import (builtins.fetchGit {
 stdenv.mkDerivation {
   name = "elm-particle";
   buildInputs = [
-    git
+    bash
     elmPackages.elm
     elmPackages.elm-format
+    git
     gnumake
   ];
 }

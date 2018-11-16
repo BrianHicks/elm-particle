@@ -233,7 +233,10 @@ viewConfetti particle =
                 , SAttrs.stroke "black"
                 , SAttrs.strokeWidth "4px"
                 , SAttrs.opacity <| String.fromFloat opacity
-                , SAttrs.transform <| "rotate(" ++ String.fromFloat ((rotations * lifetime + rotationOffset) * 360) ++ ")"
+                , SAttrs.transform <|
+                    "rotate("
+                        ++ String.fromFloat ((rotations * lifetime + rotationOffset) * 360)
+                        ++ ")"
                 ]
                 []
 
@@ -248,7 +251,10 @@ viewConfetti particle =
                 , SAttrs.stroke "black"
                 , SAttrs.strokeWidth "4px"
                 , SAttrs.opacity <| String.fromFloat opacity
-                , SAttrs.transform <| "rotate(" ++ String.fromFloat (Particle.directionDegrees particle) ++ ")"
+                , SAttrs.transform <|
+                    "rotate("
+                        ++ String.fromFloat (Particle.directionDegrees particle)
+                        ++ ")"
                 ]
                 []
 

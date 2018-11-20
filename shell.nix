@@ -1,8 +1,9 @@
 with import (builtins.fetchTarball rec {
-  name = "nixpkgs-18.09";
-  url = "https://github.com/nixos/nixpkgs/archive/18.09.tar.gz";
+  # grab a hash from here: https://nixos.org/channels/
+  name = "nixpkgs-18.09-darwin-2018-11-20";
+  url = "https://github.com/nixos/nixpkgs/archive/f7da99c4b9680254e05aa67b5aa3a60a2cbdbccd.tar.gz";
   # Hash obtained using `nix-prefetch-url --unpack <url>`
-  sha256 = "1ib96has10v5nr6bzf7v8kw7yzww8zanxgw2qi1ll1sbv6kj6zpd";
+  sha256 = "1322q71zs6c791bmniv9n21dds5l1yki111i24syypky2529s7m7";
 }) {};
 
 stdenv.mkDerivation {

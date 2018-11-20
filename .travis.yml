@@ -1,2 +1,2 @@
 language: nix
-script: nix-shell --pure --run 'make -B ci'
+script: ./ci.sh

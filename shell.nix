@@ -1,7 +1,8 @@
-with import (builtins.fetchGit {
-  name = "nixos-unstable-2018-11-16";
-  url = https://github.com/nixos/nixpkgs/;
-  rev = "6141939d6e0a77c84905efd560c03c3032164ef1";
+with import (builtins.fetchTarball rec {
+  name = "nixpkgs-18.09";
+  url = "https://github.com/nixos/nixpkgs/archive/18.09.tar.gz";
+  # Hash obtained using `nix-prefetch-url --unpack <url>`
+  sha256 = "1ib96has10v5nr6bzf7v8kw7yzww8zanxgw2qi1ll1sbv6kj6zpd";
 }) {};
 
 stdenv.mkDerivation {

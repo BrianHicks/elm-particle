@@ -439,14 +439,14 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
                 }
             , velocity =
                 let
-                    ( newVelocitySpeed, newVelocityDirection ) =
+                    ( speed, direction_ ) =
                         toPolar
                             ( velocityX + acceleration.x * deltaSeconds
                             , velocityY + acceleration.y * deltaSeconds
                             )
                 in
-                { speed = drag.coefficient * drag.area * 0.5 * drag.density * newVelocitySpeed * newVelocitySpeed
-                , direction = newVelocityDirection
+                { speed = speed - drag.coefficient * drag.area * 0.5 * drag.density * speed * speed * deltaSeconds
+                , direction = direction_
                 }
             , acceleration = acceleration
             , drag = drag

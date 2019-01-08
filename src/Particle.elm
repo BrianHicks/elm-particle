@@ -107,12 +107,12 @@ type Particle a
 
 
 type Cartesian
-    = Cartesian ( Float, Float )
+    = Cartesian { x : Float, y : Float }
 
 
 cartesianToTuple : Cartesian -> ( Float, Float )
-cartesianToTuple (Cartesian tuple) =
-    tuple
+cartesianToTuple (Cartesian { x, y }) =
+    ( x, y )
 
 
 type Polar
@@ -140,9 +140,9 @@ init generator =
         (\a ->
             Particle
                 { data = a
-                , position = Cartesian ( 0, 0 )
+                , position = Cartesian { x = 0, y = 0 }
                 , velocity = Polar { speed = 0, angle = 0 }
-                , acceleration = Cartesian ( 0, 0 )
+                , acceleration = Cartesian { x = 0, y = 0 }
                 , drag = { density = 0, area = 0, coefficient = 0 }
                 , originalLifetime = positiveInfinity
                 , lifetime = positiveInfinity
@@ -204,7 +204,7 @@ Or at a random location on screen like this:
 -}
 withLocation : Generator { x : Float, y : Float } -> Generator (Particle a) -> Generator (Particle a)
 withLocation =
-    Random.map2 (\position (Particle particle) -> Particle { particle | position = Cartesian ( position.x, position.y ) })
+    Random.map2 (\position (Particle particle) -> Particle { particle | position = Cartesian { x = position.x, y = position.y } })
 
 
 {-| In what direction is this particle traveling, to start?
@@ -279,7 +279,7 @@ other than gravity! So if you have a concrete use case for going sideways or up,
 -}
 withGravity : Float -> Generator (Particle a) -> Generator (Particle a)
 withGravity pxPerSecond =
-    Random.map (\(Particle particle) -> Particle { particle | acceleration = Cartesian ( 0, pxPerSecond ) })
+    Random.map (\(Particle particle) -> Particle { particle | acceleration = Cartesian { x = 0, y = pxPerSecond } })
 
 
 {-| How is this particle affected by the surrounding environment? Is there air?
@@ -458,11 +458,11 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
             { data = particle.data
             , position =
                 case position of
-                    Cartesian ( x, y ) ->
+                    Cartesian { x, y } ->
                         Cartesian
-                            ( x + velocityX * deltaSeconds + accelerationX * deltaSeconds * deltaSeconds / 2
-                            , y + velocityY * deltaSeconds + accelerationY * deltaSeconds * deltaSeconds / 2
-                            )
+                            { x = x + velocityX * deltaSeconds + accelerationX * deltaSeconds * deltaSeconds / 2
+                            , y = y + velocityY * deltaSeconds + accelerationY * deltaSeconds * deltaSeconds / 2
+                            }
             , velocity =
                 let
                     ( newVelocitySpeed, newVelocityAngle ) =

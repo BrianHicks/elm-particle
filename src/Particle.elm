@@ -97,17 +97,31 @@ See the top of the module docs for how this all fits together.
 type Particle a
     = Particle
         { data : a
-        , position : ( Float, Float )
-        , velocity : ( Float, Float )
-        , acceleration : ( Float, Float )
+        , position : Cartesian
+        , velocity : Polar
+        , acceleration : Cartesian
         , drag : { density : Float, area : Float, coefficient : Float }
         , originalLifetime : Float
         , lifetime : Float
         }
 
 
-type alias Coord =
-    { x : Float, y : Float }
+type Cartesian
+    = Cartesian ( Float, Float )
+
+
+cartesianToTuple : Cartesian -> ( Float, Float )
+cartesianToTuple (Cartesian tuple) =
+    tuple
+
+
+type Polar
+    = Polar { speed : Float, angle : Float }
+
+
+polarToTuple : Polar -> ( Float, Float )
+polarToTuple (Polar { speed, angle }) =
+    ( speed, angle )
 
 
 
@@ -126,9 +140,9 @@ init generator =
         (\a ->
             Particle
                 { data = a
-                , position = ( 0, 0 )
-                , velocity = ( 1, 0 )
-                , acceleration = ( 0, 0 )
+                , position = Cartesian ( 0, 0 )
+                , velocity = Polar { speed = 0, angle = 0 }
+                , acceleration = Cartesian ( 0, 0 )
                 , drag = { density = 0, area = 0, coefficient = 0 }
                 , originalLifetime = positiveInfinity
                 , lifetime = positiveInfinity
@@ -190,7 +204,7 @@ Or at a random location on screen like this:
 -}
 withLocation : Generator { x : Float, y : Float } -> Generator (Particle a) -> Generator (Particle a)
 withLocation =
-    Random.map2 (\position (Particle particle) -> Particle { particle | position = ( position.x, position.y ) })
+    Random.map2 (\position (Particle particle) -> Particle { particle | position = Cartesian ( position.x, position.y ) })
 
 
 {-| In what direction is this particle traveling, to start?
@@ -210,10 +224,9 @@ withDirection =
             Particle
                 { particle
                     | velocity =
-                        particle.velocity
-                            |> toPolar
-                            |> Tuple.mapSecond (\_ -> angle - degrees 90)
-                            |> fromPolar
+                        case particle.velocity of
+                            Polar polar ->
+                                Polar { polar | angle = angle - degrees 90 }
                 }
         )
 
@@ -234,10 +247,9 @@ withSpeed =
             Particle
                 { particle
                     | velocity =
-                        particle.velocity
-                            |> toPolar
-                            |> Tuple.mapFirst (\_ -> speed)
-                            |> fromPolar
+                        case particle.velocity of
+                            Polar polar ->
+                                Polar { polar | speed = speed }
                 }
         )
 
@@ -267,7 +279,7 @@ other than gravity! So if you have a concrete use case for going sideways or up,
 -}
 withGravity : Float -> Generator (Particle a) -> Generator (Particle a)
 withGravity pxPerSecond =
-    Random.map (\(Particle particle) -> Particle { particle | acceleration = ( 0, pxPerSecond ) })
+    Random.map (\(Particle particle) -> Particle { particle | acceleration = Cartesian ( 0, pxPerSecond ) })
 
 
 {-| How is this particle affected by the surrounding environment? Is there air?
@@ -370,7 +382,7 @@ view : (Particle a -> Svg msg) -> Particle a -> Svg msg
 view viewData ((Particle { position }) as particle) =
     let
         ( x, y ) =
-            position
+            cartesianToTuple position
     in
     Svg.g
         [ Attrs.transform ("translate(" ++ String.fromFloat x ++ "," ++ String.fromFloat y ++ ")") ]
@@ -405,7 +417,7 @@ yourself.
 -}
 direction : Particle a -> Float
 direction (Particle { velocity }) =
-    Tuple.second <| toPolar velocity
+    velocity |> polarToTuple |> Tuple.second
 
 
 {-| Like `direction` but returns the angle in degrees instead of radians to make
@@ -445,13 +457,16 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
                 v + dragAtVelocity (abs v) * deltaSeconds
 
         ( positionX, positionY ) =
-            position
+            cartesianToTuple position
 
         ( accelerationX, accelerationY ) =
-            acceleration
+            cartesianToTuple acceleration
+
+        ( velocitySpeed, velocityAngle ) =
+            polarToTuple velocity
 
         ( velocityX, velocityY ) =
-            velocity
+            fromPolar ( velocitySpeed, velocityAngle )
     in
     if lifetime < 0 then
         Nothing
@@ -460,13 +475,22 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
         (Just << Particle)
             { data = particle.data
             , position =
-                ( positionX + velocityX * deltaSeconds + accelerationX * deltaSeconds * deltaSeconds / 2
-                , positionY + velocityY * deltaSeconds + accelerationY * deltaSeconds * deltaSeconds / 2
-                )
+                Cartesian
+                    ( positionX + velocityX * deltaSeconds + accelerationX * deltaSeconds * deltaSeconds / 2
+                    , positionY + velocityY * deltaSeconds + accelerationY * deltaSeconds * deltaSeconds / 2
+                    )
             , velocity =
-                ( velocityX + accelerationX * deltaSeconds |> applyDrag
-                , velocityY + accelerationY * deltaSeconds |> applyDrag
-                )
+                let
+                    ( newVelocitySpeed, newVelocityAngle ) =
+                        toPolar
+                            ( velocityX + accelerationX * deltaSeconds
+                            , velocityY + accelerationY * deltaSeconds
+                            )
+                in
+                Polar
+                    { speed = applyDrag newVelocitySpeed
+                    , angle = newVelocityAngle
+                    }
             , acceleration = acceleration
             , drag = drag
             , originalLifetime = particle.originalLifetime

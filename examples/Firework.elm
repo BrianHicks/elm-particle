@@ -33,7 +33,7 @@ fizzler =
     Particle.init (Random.constant Fizzler)
         |> Particle.withDirection (Random.map degrees (Random.float 0 360))
         |> Particle.withSpeed (Random.map (clamp 0 400) (normal 200 200))
-        |> Particle.withLifetime (Random.constant 1)
+        |> Particle.withLifetime (normal 1 0.25)
 
 
 streamer : Generator (Particle Firework)
@@ -41,7 +41,7 @@ streamer =
     Particle.init (Random.constant Streamer)
         |> Particle.withDirection (Random.map degrees (Random.float 0 360))
         |> Particle.withSpeed (Random.map (clamp 0 800) (normal 400 400))
-        |> Particle.withLifetime (Random.constant 1.5)
+        |> Particle.withLifetime (normal 3 0.25)
 
 
 firework : Generator (Particle Firework)

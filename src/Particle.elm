@@ -106,22 +106,16 @@ type Particle a
         }
 
 
-type Cartesian
-    = Cartesian { x : Float, y : Float }
+type alias Cartesian =
+    { x : Float
+    , y : Float
+    }
 
 
-cartesianToTuple : Cartesian -> ( Float, Float )
-cartesianToTuple (Cartesian { x, y }) =
-    ( x, y )
-
-
-type Polar
-    = Polar { speed : Float, angle : Float }
-
-
-polarToTuple : Polar -> ( Float, Float )
-polarToTuple (Polar { speed, angle }) =
-    ( speed, angle )
+type alias Polar =
+    { speed : Float
+    , direction : Float
+    }
 
 
 
@@ -140,9 +134,9 @@ init generator =
         (\a ->
             Particle
                 { data = a
-                , position = Cartesian { x = 0, y = 0 }
-                , velocity = Polar { speed = 0, angle = 0 }
-                , acceleration = Cartesian { x = 0, y = 0 }
+                , position = { x = 0, y = 0 }
+                , velocity = { speed = 0, direction = 0 }
+                , acceleration = { x = 0, y = 0 }
                 , drag = { density = 0, area = 0, coefficient = 0 }
                 , originalLifetime = positiveInfinity
                 , lifetime = positiveInfinity
@@ -204,7 +198,7 @@ Or at a random location on screen like this:
 -}
 withLocation : Generator { x : Float, y : Float } -> Generator (Particle a) -> Generator (Particle a)
 withLocation =
-    Random.map2 (\position (Particle particle) -> Particle { particle | position = Cartesian { x = position.x, y = position.y } })
+    Random.map2 (\position (Particle particle) -> Particle { particle | position = position })
 
 
 {-| In what direction is this particle traveling, to start?
@@ -220,14 +214,8 @@ rotation goes clockwise. You can, of course, substitute `degrees 45` or `turns
 withDirection : Generator Float -> Generator (Particle a) -> Generator (Particle a)
 withDirection =
     Random.map2
-        (\angle (Particle particle) ->
-            Particle
-                { particle
-                    | velocity =
-                        case particle.velocity of
-                            Polar polar ->
-                                Polar { polar | angle = angle - degrees 90 }
-                }
+        (\direction_ (Particle ({ velocity } as particle)) ->
+            Particle { particle | velocity = { velocity | direction = direction_ - degrees 90 } }
         )
 
 
@@ -243,14 +231,8 @@ per second, so you'll have to experiment to make it look good for your use case.
 withSpeed : Generator Float -> Generator (Particle a) -> Generator (Particle a)
 withSpeed =
     Random.map2
-        (\speed (Particle particle) ->
-            Particle
-                { particle
-                    | velocity =
-                        case particle.velocity of
-                            Polar polar ->
-                                Polar { polar | speed = speed }
-                }
+        (\speed (Particle ({ velocity } as particle)) ->
+            Particle { particle | velocity = { velocity | speed = speed } }
         )
 
 
@@ -279,7 +261,9 @@ other than gravity! So if you have a concrete use case for going sideways or up,
 -}
 withGravity : Float -> Generator (Particle a) -> Generator (Particle a)
 withGravity pxPerSecond =
-    Random.map (\(Particle particle) -> Particle { particle | acceleration = Cartesian { x = 0, y = pxPerSecond } })
+    -- TODO: should this only update `y` instead of both `x` and `y`? It will
+    -- cause issues for wind, for example.
+    Random.map (\(Particle particle) -> Particle { particle | acceleration = { x = 0, y = pxPerSecond } })
 
 
 {-| How is this particle affected by the surrounding environment? Is there air?
@@ -380,12 +364,8 @@ wrapping whatever you pass in a `<g>` element.
 -}
 view : (Particle a -> Svg msg) -> Particle a -> Svg msg
 view viewData ((Particle { position }) as particle) =
-    let
-        ( x, y ) =
-            cartesianToTuple position
-    in
     Svg.g
-        [ Attrs.transform ("translate(" ++ String.fromFloat x ++ "," ++ String.fromFloat y ++ ")") ]
+        [ Attrs.transform ("translate(" ++ String.fromFloat position.x ++ "," ++ String.fromFloat position.y ++ ")") ]
         [ viewData particle ]
 
 
@@ -417,7 +397,7 @@ yourself.
 -}
 direction : Particle a -> Float
 direction (Particle { velocity }) =
-    velocity |> polarToTuple |> Tuple.second
+    velocity.direction
 
 
 {-| Like `direction` but returns the angle in degrees instead of radians to make
@@ -444,11 +424,8 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
         deltaSeconds =
             deltaMs / 1000
 
-        ( accelerationX, accelerationY ) =
-            cartesianToTuple acceleration
-
         ( velocityX, velocityY ) =
-            velocity |> polarToTuple |> fromPolar
+            fromPolar ( velocity.speed, velocity.direction )
     in
     if lifetime < 0 then
         Nothing
@@ -457,24 +434,20 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
         (Just << Particle)
             { data = particle.data
             , position =
-                case position of
-                    Cartesian { x, y } ->
-                        Cartesian
-                            { x = x + velocityX * deltaSeconds + accelerationX * deltaSeconds * deltaSeconds / 2
-                            , y = y + velocityY * deltaSeconds + accelerationY * deltaSeconds * deltaSeconds / 2
-                            }
+                { x = position.x + velocityX * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
+                , y = position.y + velocityY * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
+                }
             , velocity =
                 let
-                    ( newVelocitySpeed, newVelocityAngle ) =
+                    ( newVelocitySpeed, newVelocityDirection ) =
                         toPolar
-                            ( velocityX + accelerationX * deltaSeconds
-                            , velocityY + accelerationY * deltaSeconds
+                            ( velocityX + acceleration.x * deltaSeconds
+                            , velocityY + acceleration.y * deltaSeconds
                             )
                 in
-                Polar
-                    { speed = drag.coefficient * drag.area * 0.5 * drag.density * newVelocitySpeed * newVelocitySpeed
-                    , angle = newVelocityAngle
-                    }
+                { speed = drag.coefficient * drag.area * 0.5 * drag.density * newVelocitySpeed * newVelocitySpeed
+                , direction = newVelocityDirection
+                }
             , acceleration = acceleration
             , drag = drag
             , originalLifetime = particle.originalLifetime

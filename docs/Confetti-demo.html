@@ -794,11 +794,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.V.E === region._.E)
+	if (region.X.F === region.ab.F)
 	{
-		return 'on line ' + region.V.E;
+		return 'on line ' + region.X.F;
 	}
-	return 'on lines ' + region.V.E + ' through ' + region._.E;
+	return 'on lines ' + region.X.F + ' through ' + region.ab.F;
 }
 
 
@@ -1904,9 +1904,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aH,
+		impl.aJ,
+		impl.aR,
 		impl.aP,
-		impl.aN,
 		function() { return function() {} }
 	);
 });
@@ -2707,8 +2707,8 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
 		k: func(record.k),
-		W: record.W,
-		U: record.U
+		Y: record.Y,
+		W: record.W
 	}
 });
 
@@ -2977,10 +2977,10 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 
 		var value = result.a;
 		var message = !tag ? value : tag < 3 ? value.a : value.k;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.W;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.Y;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.U) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.W) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3930,11 +3930,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aH,
+		impl.aJ,
+		impl.aR,
 		impl.aP,
-		impl.aN,
 		function(sendToApp, initialModel) {
-			var view = impl.aR;
+			var view = impl.aT;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3966,12 +3966,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aH,
+		impl.aJ,
+		impl.aR,
 		impl.aP,
-		impl.aN,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.J && impl.J(sendToApp)
-			var view = impl.aR;
+			var divertHrefToApp = impl.K && impl.K(sendToApp)
+			var view = impl.aT;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -3979,12 +3979,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.ay);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aA);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.aO) && (_VirtualDom_doc.title = title = doc.aO);
+				(title !== doc.aQ) && (_VirtualDom_doc.title = title = doc.aQ);
 			});
 		}
 	);
@@ -4040,12 +4040,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.aJ;
-	var onUrlRequest = impl.aK;
+	var onUrlChange = impl.aL;
+	var onUrlRequest = impl.aM;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		J: function(sendToApp)
+		K: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4061,9 +4061,9 @@ function _Browser_application(impl)
 					var next = elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.al === next.al
-							&& curr.ac === next.ac
-							&& curr.ai.a === next.ai.a
+							&& curr.an === next.an
+							&& curr.ae === next.ae
+							&& curr.ak.a === next.ak.a
 						)
 							? elm$browser$Browser$Internal(next)
 							: elm$browser$Browser$External(href)
@@ -4071,13 +4071,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aH: function(flags)
+		aJ: function(flags)
 		{
-			return A3(impl.aH, flags, _Browser_getUrl(), key);
+			return A3(impl.aJ, flags, _Browser_getUrl(), key);
 		},
+		aT: impl.aT,
 		aR: impl.aR,
-		aP: impl.aP,
-		aN: impl.aN
+		aP: impl.aP
 	});
 }
 
@@ -4143,17 +4143,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aF: 'hidden', az: 'visibilitychange' }
+		? { aH: 'hidden', aB: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aF: 'mozHidden', az: 'mozvisibilitychange' }
+		? { aH: 'mozHidden', aB: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aF: 'msHidden', az: 'msvisibilitychange' }
+		? { aH: 'msHidden', aB: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aF: 'webkitHidden', az: 'webkitvisibilitychange' }
-		: { aF: 'hidden', az: 'visibilitychange' };
+		? { aH: 'webkitHidden', aB: 'webkitvisibilitychange' }
+		: { aH: 'hidden', aB: 'visibilitychange' };
 }
 
 
@@ -4234,12 +4234,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		ar: _Browser_getScene(),
-		au: {
-			aT: _Browser_window.pageXOffset,
-			aU: _Browser_window.pageYOffset,
-			A: _Browser_doc.documentElement.clientWidth,
-			v: _Browser_doc.documentElement.clientHeight
+		at: _Browser_getScene(),
+		aw: {
+			aV: _Browser_window.pageXOffset,
+			aW: _Browser_window.pageYOffset,
+			B: _Browser_doc.documentElement.clientWidth,
+			w: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4249,8 +4249,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		A: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		v: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		B: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		w: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4273,15 +4273,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			ar: {
-				A: node.scrollWidth,
-				v: node.scrollHeight
+			at: {
+				B: node.scrollWidth,
+				w: node.scrollHeight
 			},
-			au: {
-				aT: node.scrollLeft,
-				aU: node.scrollTop,
-				A: node.clientWidth,
-				v: node.clientHeight
+			aw: {
+				aV: node.scrollLeft,
+				aW: node.scrollTop,
+				B: node.clientWidth,
+				w: node.clientHeight
 			}
 		};
 	});
@@ -4311,18 +4311,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			ar: _Browser_getScene(),
-			au: {
-				aT: x,
-				aU: y,
-				A: _Browser_doc.documentElement.clientWidth,
-				v: _Browser_doc.documentElement.clientHeight
+			at: _Browser_getScene(),
+			aw: {
+				aV: x,
+				aW: y,
+				B: _Browser_doc.documentElement.clientWidth,
+				w: _Browser_doc.documentElement.clientHeight
 			},
-			aC: {
-				aT: x + rect.left,
-				aU: y + rect.top,
-				A: rect.width,
-				v: rect.height
+			aE: {
+				aV: x + rect.left,
+				aW: y + rect.top,
+				B: rect.width,
+				w: rect.height
 			}
 		};
 	});
@@ -4724,7 +4724,7 @@ var author$project$Confetti$genSquare = A4(
 	F3(
 		function (color, rotations, rotationOffset) {
 			return author$project$Confetti$Square(
-				{P: color, ap: rotationOffset, aq: rotations});
+				{R: color, ar: rotationOffset, as: rotations});
 		}),
 	A2(
 		elm$random$Random$weighted,
@@ -4762,8 +4762,8 @@ var author$project$Confetti$genStreamer = A3(
 		function (color, length) {
 			return author$project$Confetti$Streamer(
 				{
-					P: color,
-					R: elm$core$Basics$round(
+					R: color,
+					T: elm$core$Basics$round(
 						elm$core$Basics$abs(length))
 				});
 		}),
@@ -4855,13 +4855,13 @@ var author$project$Particle$init = function (generator) {
 		elm$random$Random$map,
 		function (a) {
 			return {
-				O: _Utils_Tuple2(0, 0),
-				C: a,
-				Q: {aw: 0, aA: 0, aB: 0},
-				D: author$project$Particle$positiveInfinity,
-				G: author$project$Particle$positiveInfinity,
-				H: _Utils_Tuple2(0, 0),
-				o: _Utils_Tuple2(1, 0)
+				Q: {aV: 0, aW: 0},
+				D: a,
+				S: {ay: 0, aC: 0, aD: 0},
+				E: author$project$Particle$positiveInfinity,
+				H: author$project$Particle$positiveInfinity,
+				I: {aV: 0, aW: 0},
+				o: {u: 0, L: 0}
 			};
 		},
 		generator);
@@ -4869,44 +4869,19 @@ var author$project$Particle$init = function (generator) {
 var elm$core$Basics$degrees = function (angleInDegrees) {
 	return (angleInDegrees * elm$core$Basics$pi) / 180;
 };
-var elm$core$Basics$sin = _Basics_sin;
-var elm$core$Basics$fromPolar = function (_n0) {
-	var radius = _n0.a;
-	var theta = _n0.b;
-	return _Utils_Tuple2(
-		radius * elm$core$Basics$cos(theta),
-		radius * elm$core$Basics$sin(theta));
-};
-var elm$core$Basics$atan2 = _Basics_atan2;
-var elm$core$Basics$toPolar = function (_n0) {
-	var x = _n0.a;
-	var y = _n0.b;
-	return _Utils_Tuple2(
-		elm$core$Basics$sqrt((x * x) + (y * y)),
-		A2(elm$core$Basics$atan2, y, x));
-};
-var elm$core$Tuple$mapSecond = F2(
-	function (func, _n0) {
-		var x = _n0.a;
-		var y = _n0.b;
-		return _Utils_Tuple2(
-			x,
-			func(y));
-	});
 var author$project$Particle$withDirection = elm$random$Random$map2(
 	F2(
-		function (angle, _n0) {
+		function (direction_, _n0) {
 			var particle = _n0;
+			var velocity = particle.o;
 			return _Utils_update(
 				particle,
 				{
-					o: elm$core$Basics$fromPolar(
-						A2(
-							elm$core$Tuple$mapSecond,
-							function (_n1) {
-								return angle - elm$core$Basics$degrees(90);
-							},
-							elm$core$Basics$toPolar(particle.o)))
+					o: _Utils_update(
+						velocity,
+						{
+							u: direction_ - elm$core$Basics$degrees(90)
+						})
 				});
 		}));
 var author$project$Particle$withDrag = function (drag) {
@@ -4916,7 +4891,7 @@ var author$project$Particle$withDrag = function (drag) {
 			return _Utils_update(
 				particle,
 				{
-					Q: drag(particle.C)
+					S: drag(particle.D)
 				});
 		});
 };
@@ -4927,7 +4902,7 @@ var author$project$Particle$withGravity = function (pxPerSecond) {
 			return _Utils_update(
 				particle,
 				{
-					O: _Utils_Tuple2(0, pxPerSecond)
+					Q: {aV: 0, aW: pxPerSecond}
 				});
 		});
 };
@@ -4937,7 +4912,7 @@ var author$project$Particle$withLifetime = elm$random$Random$map2(
 			var particle = _n0;
 			return _Utils_update(
 				particle,
-				{D: lifetime, G: lifetime});
+				{E: lifetime, H: lifetime});
 		}));
 var author$project$Particle$withLocation = elm$random$Random$map2(
 	F2(
@@ -4945,32 +4920,19 @@ var author$project$Particle$withLocation = elm$random$Random$map2(
 			var particle = _n0;
 			return _Utils_update(
 				particle,
-				{
-					H: _Utils_Tuple2(position.aT, position.aU)
-				});
+				{I: position});
 		}));
-var elm$core$Tuple$mapFirst = F2(
-	function (func, _n0) {
-		var x = _n0.a;
-		var y = _n0.b;
-		return _Utils_Tuple2(
-			func(x),
-			y);
-	});
 var author$project$Particle$withSpeed = elm$random$Random$map2(
 	F2(
 		function (speed, _n0) {
 			var particle = _n0;
+			var velocity = particle.o;
 			return _Utils_update(
 				particle,
 				{
-					o: elm$core$Basics$fromPolar(
-						A2(
-							elm$core$Tuple$mapFirst,
-							function (_n1) {
-								return speed;
-							},
-							elm$core$Basics$toPolar(particle.o)))
+					o: _Utils_update(
+						velocity,
+						{L: speed})
 				});
 		}));
 var elm$random$Random$constant = function (value) {
@@ -4984,22 +4946,22 @@ var author$project$Confetti$particleAt = F2(
 			author$project$Particle$withDrag,
 			function (confetti) {
 				return {
-					aw: function () {
+					ay: function () {
 						if (!confetti.$) {
 							return 1;
 						} else {
-							var length = confetti.a.R;
+							var length = confetti.a.T;
 							return length / 10;
 						}
 					}(),
-					aA: function () {
+					aC: function () {
 						if (!confetti.$) {
 							return 1.15;
 						} else {
 							return 0.85;
 						}
 					}(),
-					aB: 1.226e-3
+					aD: 1.226e-3
 				};
 			},
 			A2(
@@ -5017,7 +4979,7 @@ var author$project$Confetti$particleAt = F2(
 						A2(
 							author$project$Particle$withLocation,
 							elm$random$Random$constant(
-								{aT: x, aU: y}),
+								{aV: x, aW: y}),
 							A2(
 								author$project$Particle$withLifetime,
 								A2(elm_community$random_extra$Random$Float$normal, 1.5, 0.25),
@@ -5033,16 +4995,32 @@ var elm$random$Random$step = F2(
 var author$project$Particle$System$burst = F2(
 	function (generator, _n0) {
 		var system = _n0;
-		var _n1 = A2(elm$random$Random$step, generator, system.I);
+		var _n1 = A2(elm$random$Random$step, generator, system.J);
 		var particles = _n1.a;
 		var nextSeed = _n1.b;
 		return _Utils_update(
 			system,
 			{
 				s: _Utils_ap(particles, system.s),
-				I: nextSeed
+				J: nextSeed
 			});
 	});
+var elm$core$Basics$sin = _Basics_sin;
+var elm$core$Basics$fromPolar = function (_n0) {
+	var radius = _n0.a;
+	var theta = _n0.b;
+	return _Utils_Tuple2(
+		radius * elm$core$Basics$cos(theta),
+		radius * elm$core$Basics$sin(theta));
+};
+var elm$core$Basics$atan2 = _Basics_atan2;
+var elm$core$Basics$toPolar = function (_n0) {
+	var x = _n0.a;
+	var y = _n0.b;
+	return _Utils_Tuple2(
+		elm$core$Basics$sqrt((x * x) + (y * y)),
+		A2(elm$core$Basics$atan2, y, x));
+};
 var elm$core$Maybe$Just = function (a) {
 	return {$: 0, a: a};
 };
@@ -5050,39 +5028,31 @@ var elm$core$Maybe$Nothing = {$: 1};
 var author$project$Particle$update = F2(
 	function (deltaMs, _n0) {
 		var particle = _n0;
-		var position = particle.H;
+		var position = particle.I;
 		var velocity = particle.o;
-		var acceleration = particle.O;
-		var drag = particle.Q;
-		var lifetime = particle.D;
-		var dragAtVelocity = function (v) {
-			return ((((drag.aA * drag.aw) * 0.5) * drag.aB) * v) * v;
-		};
+		var acceleration = particle.Q;
+		var drag = particle.S;
+		var lifetime = particle.E;
 		var deltaSeconds = deltaMs / 1000;
-		var applyDrag = function (v) {
-			return (v > 0) ? (v - (dragAtVelocity(v) * deltaSeconds)) : (v + (dragAtVelocity(
-				elm$core$Basics$abs(v)) * deltaSeconds));
-		};
-		var _n1 = velocity;
+		var _n1 = elm$core$Basics$fromPolar(
+			_Utils_Tuple2(velocity.L, velocity.u));
 		var velocityX = _n1.a;
 		var velocityY = _n1.b;
-		var _n2 = position;
-		var positionX = _n2.a;
-		var positionY = _n2.b;
-		var _n3 = acceleration;
-		var accelerationX = _n3.a;
-		var accelerationY = _n3.b;
 		return (lifetime < 0) ? elm$core$Maybe$Nothing : A2(elm$core$Basics$composeL, elm$core$Maybe$Just, elm$core$Basics$identity)(
 			{
-				O: acceleration,
-				C: particle.C,
-				Q: drag,
-				D: lifetime - deltaSeconds,
-				G: particle.G,
-				H: _Utils_Tuple2((positionX + (velocityX * deltaSeconds)) + (((accelerationX * deltaSeconds) * deltaSeconds) / 2), (positionY + (velocityY * deltaSeconds)) + (((accelerationY * deltaSeconds) * deltaSeconds) / 2)),
-				o: _Utils_Tuple2(
-					applyDrag(velocityX + (accelerationX * deltaSeconds)),
-					applyDrag(velocityY + (accelerationY * deltaSeconds)))
+				Q: acceleration,
+				D: particle.D,
+				S: drag,
+				E: lifetime - deltaSeconds,
+				H: particle.H,
+				I: {aV: (position.aV + (velocityX * deltaSeconds)) + (((acceleration.aV * deltaSeconds) * deltaSeconds) / 2), aW: (position.aW + (velocityY * deltaSeconds)) + (((acceleration.aW * deltaSeconds) * deltaSeconds) / 2)},
+				o: function () {
+					var _n2 = elm$core$Basics$toPolar(
+						_Utils_Tuple2(velocityX + (acceleration.aV * deltaSeconds), velocityY + (acceleration.aW * deltaSeconds)));
+					var speed = _n2.a;
+					var direction_ = _n2.b;
+					return {u: direction_, L: speed - ((((((drag.aC * drag.ay) * 0.5) * drag.aD) * speed) * speed) * deltaSeconds)};
+				}()
 			});
 	});
 var elm$core$List$maybeCons = F3(
@@ -5114,7 +5084,7 @@ var author$project$Particle$System$update = F2(
 				elm$core$List$filterMap,
 				author$project$Particle$update(delta),
 				_Utils_ap(particles, system.s)),
-			I: seed
+			J: seed
 		};
 	});
 var elm$core$Basics$False = 1;
@@ -5599,7 +5569,7 @@ var author$project$Confetti$update = F2(
 								elm$core$Process$sleep(150))
 							])));
 			case 1:
-				var _n5 = model.F;
+				var _n5 = model.G;
 				var x = _n5.a;
 				var y = _n5.b;
 				return _Utils_Tuple2(
@@ -5622,7 +5592,7 @@ var author$project$Confetti$update = F2(
 					_Utils_update(
 						model,
 						{
-							F: _Utils_Tuple2(x, y)
+							G: _Utils_Tuple2(x, y)
 						}),
 					elm$core$Platform$Cmd$none);
 			default:
@@ -5652,11 +5622,11 @@ var author$project$Confetti$fill = function (color) {
 };
 var author$project$Particle$data = function (_n0) {
 	var particle = _n0;
-	return particle.C;
+	return particle.D;
 };
 var author$project$Particle$direction = function (_n0) {
 	var velocity = _n0.o;
-	return elm$core$Basics$toPolar(velocity).b;
+	return velocity.u;
 };
 var author$project$Particle$directionDegrees = function (particle) {
 	return (author$project$Particle$direction(particle) * 180) / elm$core$Basics$pi;
@@ -5666,8 +5636,8 @@ var elm$core$Basics$clamp = F3(
 		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
 	});
 var author$project$Particle$lifetimePercent = function (_n0) {
-	var lifetime = _n0.D;
-	var originalLifetime = _n0.G;
+	var lifetime = _n0.E;
+	var originalLifetime = _n0.H;
 	return A3(elm$core$Basics$clamp, 0, 1, lifetime / originalLifetime);
 };
 var elm$core$String$fromFloat = _String_fromNumber;
@@ -5704,9 +5674,9 @@ var author$project$Confetti$viewConfetti = function (particle) {
 	var opacity = (lifetime < 0.1) ? (lifetime * 10) : 1;
 	var _n0 = author$project$Particle$data(particle);
 	if (!_n0.$) {
-		var color = _n0.a.P;
-		var rotationOffset = _n0.a.ap;
-		var rotations = _n0.a.aq;
+		var color = _n0.a.R;
+		var rotationOffset = _n0.a.ar;
+		var rotations = _n0.a.as;
 		return A2(
 			elm$svg$Svg$rect,
 			_List_fromArray(
@@ -5728,8 +5698,8 @@ var author$project$Confetti$viewConfetti = function (particle) {
 				]),
 			_List_Nil);
 	} else {
-		var color = _n0.a.P;
-		var length = _n0.a.R;
+		var color = _n0.a.R;
+		var length = _n0.a.T;
 		return A2(
 			elm$svg$Svg$rect,
 			_List_fromArray(
@@ -5756,16 +5726,13 @@ var author$project$Confetti$viewConfetti = function (particle) {
 var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
 var author$project$Particle$view = F2(
 	function (viewData, particle) {
-		var position = particle.H;
-		var _n0 = position;
-		var x = _n0.a;
-		var y = _n0.b;
+		var position = particle.I;
 		return A2(
 			elm$svg$Svg$g,
 			_List_fromArray(
 				[
 					elm$svg$Svg$Attributes$transform(
-					'translate(' + (elm$core$String$fromFloat(x) + (',' + (elm$core$String$fromFloat(y) + ')'))))
+					'translate(' + (elm$core$String$fromFloat(position.aV) + (',' + (elm$core$String$fromFloat(position.aW) + ')'))))
 				]),
 			_List_fromArray(
 				[
@@ -5816,7 +5783,7 @@ var elm$html$Html$Attributes$width = function (n) {
 		elm$core$String$fromInt(n));
 };
 var author$project$Confetti$view = function (model) {
-	var _n0 = model.F;
+	var _n0 = model.G;
 	var mouseX = _n0.a;
 	var mouseY = _n0.b;
 	return A2(
@@ -5861,15 +5828,23 @@ var author$project$Confetti$view = function (model) {
 			]));
 };
 var author$project$Particle$System$init = function (seed) {
-	return {s: _List_Nil, I: seed};
+	return {s: _List_Nil, J: seed};
 };
 var author$project$Particle$System$NewFrame = F3(
 	function (a, b, c) {
 		return {$: 0, a: a, b: b, c: c};
 	});
+var elm$core$Tuple$mapFirst = F2(
+	function (func, _n0) {
+		var x = _n0.a;
+		var y = _n0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
 var author$project$Particle$System$emitterParticles = F3(
 	function (delta, emitters, _n0) {
-		var seed = _n0.I;
+		var seed = _n0.J;
 		return A3(
 			elm$core$List$foldl,
 			F2(
@@ -5892,7 +5867,7 @@ var elm$browser$Browser$AnimationManager$Delta = function (a) {
 };
 var elm$browser$Browser$AnimationManager$State = F3(
 	function (subs, request, oldTime) {
-		return {T: oldTime, ao: request, as: subs};
+		return {V: oldTime, aq: request, au: subs};
 	});
 var elm$browser$Browser$AnimationManager$init = elm$core$Task$succeed(
 	A3(elm$browser$Browser$AnimationManager$State, _List_Nil, elm$core$Maybe$Nothing, 0));
@@ -5937,7 +5912,7 @@ var elm$core$String$contains = _String_contains;
 var elm$core$String$toInt = _String_toInt;
 var elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {ab: fragment, ac: host, ag: path, ai: port_, al: protocol, am: query};
+		return {ad: fragment, ae: host, ai: path, ak: port_, an: protocol, ao: query};
 	});
 var elm$url$Url$chompBeforePath = F5(
 	function (protocol, path, params, frag, str) {
@@ -6048,8 +6023,8 @@ var elm$core$Process$kill = _Scheduler_kill;
 var elm$core$Process$spawn = _Scheduler_spawn;
 var elm$browser$Browser$AnimationManager$onEffects = F3(
 	function (router, subs, _n0) {
-		var request = _n0.ao;
-		var oldTime = _n0.T;
+		var request = _n0.aq;
+		var oldTime = _n0.V;
 		var _n1 = _Utils_Tuple2(request, subs);
 		if (_n1.a.$ === 1) {
 			if (!_n1.b.b) {
@@ -6097,8 +6072,8 @@ var elm$time$Time$Posix = elm$core$Basics$identity;
 var elm$time$Time$millisToPosix = elm$core$Basics$identity;
 var elm$browser$Browser$AnimationManager$onSelfMsg = F3(
 	function (router, newTime, _n0) {
-		var subs = _n0.as;
-		var oldTime = _n0.T;
+		var subs = _n0.au;
+		var oldTime = _n0.V;
 		var send = function (sub) {
 			if (!sub.$) {
 				var tagger = sub.a;
@@ -6188,7 +6163,7 @@ var elm$browser$Browser$Events$MySub = F3(
 	});
 var elm$browser$Browser$Events$State = F2(
 	function (subs, pids) {
-		return {ah: pids, as: subs};
+		return {aj: pids, au: subs};
 	});
 var elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
@@ -6212,7 +6187,7 @@ var elm$browser$Browser$Events$addKey = function (sub) {
 };
 var elm$browser$Browser$Events$Event = F2(
 	function (key, event) {
-		return {aa: event, ad: key};
+		return {ac: event, af: key};
 	});
 var elm$browser$Browser$Events$spawn = F3(
 	function (router, key, _n0) {
@@ -6493,7 +6468,7 @@ var elm$browser$Browser$Events$onEffects = F3(
 			stepLeft,
 			stepBoth,
 			stepRight,
-			state.ah,
+			state.aj,
 			elm$core$Dict$fromList(newSubs),
 			_Utils_Tuple3(_List_Nil, elm$core$Dict$empty, _List_Nil));
 		var deadPids = _n0.a;
@@ -6521,8 +6496,8 @@ var elm$browser$Browser$Events$onEffects = F3(
 	});
 var elm$browser$Browser$Events$onSelfMsg = F3(
 	function (router, _n0, state) {
-		var key = _n0.ad;
-		var event = _n0.aa;
+		var key = _n0.af;
+		var event = _n0.ac;
 		var toMessage = function (_n2) {
 			var subKey = _n2.a;
 			var _n3 = _n2.b;
@@ -6531,7 +6506,7 @@ var elm$browser$Browser$Events$onSelfMsg = F3(
 			var decoder = _n3.c;
 			return _Utils_eq(subKey, key) ? A2(_Browser_decodeEvent, decoder, event) : elm$core$Maybe$Nothing;
 		};
-		var messages = A2(elm$core$List$filterMap, toMessage, state.as);
+		var messages = A2(elm$core$List$filterMap, toMessage, state.au);
 		return A2(
 			elm$core$Task$andThen,
 			function (_n1) {
@@ -6576,16 +6551,16 @@ var elm$random$Random$initialSeed = function (x) {
 };
 var author$project$Confetti$main = elm$browser$Browser$element(
 	{
-		aH: function (_n0) {
+		aJ: function (_n0) {
 			return _Utils_Tuple2(
 				{
-					F: _Utils_Tuple2(0, 0),
+					G: _Utils_Tuple2(0, 0),
 					m: author$project$Particle$System$init(
 						elm$random$Random$initialSeed(0))
 				},
 				elm$core$Platform$Cmd$none);
 		},
-		aN: function (model) {
+		aP: function (model) {
 			return elm$core$Platform$Sub$batch(
 				_List_fromArray(
 					[
@@ -6600,8 +6575,8 @@ var author$project$Confetti$main = elm$browser$Browser$element(
 							A2(elm$json$Json$Decode$field, 'clientY', elm$json$Json$Decode$float)))
 					]));
 		},
-		aP: author$project$Confetti$update,
-		aR: author$project$Confetti$view
+		aR: author$project$Confetti$update,
+		aT: author$project$Confetti$view
 	});
 _Platform_export({'Confetti':{'init':author$project$Confetti$main(
 	elm$json$Json$Decode$succeed(0))(0)}});}(this));

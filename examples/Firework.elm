@@ -105,8 +105,8 @@ fireworkView particle =
     case Particle.data particle of
         Fizzler ->
             Svg.circle
-                [ SAttrs.r "3"
-                , SAttrs.fill "#DCF1FF"
+                [ SAttrs.r "2"
+                , SAttrs.fill "rgb(186, 198, 209)" -- might be 186 198 209
                 ]
                 []
 
@@ -114,7 +114,7 @@ fireworkView particle =
             Svg.rect
                 [ SAttrs.height "3"
                 , SAttrs.width "15"
-                , SAttrs.fill "#DCF1FF"
+                , SAttrs.fill "rgb(218, 213, 218)" -- fades to about 70, 65, 70
                 , SAttrs.transform <|
                     "rotate("
                         ++ String.fromFloat (Particle.directionDegrees particle)

@@ -1,5 +1,15 @@
 module Main exposing (main)
 
+{-| HEADS UP! You can view this example alongside the running code at
+<https://brianhicks.github.io/elm-particle/Firework.html>
+
+We're going to make a firework, specifically one that looks like this stock
+video: <https://videos.pexels.com/videos/fireworks-display-854341>
+
+[ms]: https://mutant.tech/
+
+-}
+
 import Browser exposing (Document)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
@@ -14,15 +24,34 @@ import Svg.Attributes as SAttrs
 
 
 type Firework
-    = Dot
-    | Line Int
+    = Fizzler
+    | Streamer
 
 
-firework : Generator Firework
+fizzler : Generator (Particle Firework)
+fizzler =
+    Particle.init (Random.constant Fizzler)
+        |> Particle.withDirection (Random.map degrees (normal 0 90))
+        |> Particle.withSpeed (Random.constant 200)
+        -- |> Particle.withSpeed (Random.map (clamp 0 400) (normal 200 200))
+        |> Particle.withLifetime (Random.constant 1)
+        |> Particle.withDrag
+            (\_ ->
+                { coefficient = 1
+                , density = 0.015
+                , area = 3
+                }
+            )
+
+
+streamer : Generator (Particle Firework)
+streamer =
+    Particle.init (Random.constant Streamer)
+
+
+firework : Generator (Particle Firework)
 firework =
-    Random.Extra.frequency
-        ( 1 / 8, Random.map (Line << max 3 << floor) (normal 15 6) )
-        [ ( 7 / 8, Random.constant Dot ) ]
+    Random.Extra.frequency ( 1, fizzler ) []
 
 
 type alias Model =
@@ -42,20 +71,10 @@ update msg model =
 
         Detonate ->
             ( System.burst
-                (Particle.init firework
-                    |> Particle.withLocation (Random.constant { x = 150, y = 300 })
-                    |> Particle.withDirection (normal 0 (degrees 15))
-                    |> Particle.withSpeed (normal 500 100)
-                    |> Particle.withLifetime (Random.constant 1)
-                    |> Particle.withGravity 100
-                    |> Particle.withDrag
-                        (\_ ->
-                            { coefficient = 1
-                            , density = 0.001226
-                            , area = 3
-                            }
-                        )
-                    |> Random.list 100
+                (firework
+                    |> Particle.withLocation (Random.constant { x = 300, y = 300 })
+                    -- |> Particle.withGravity 100
+                    |> Random.list 200
                 )
                 model
             , Cmd.none
@@ -71,9 +90,9 @@ view model =
             ]
             [ Html.text "Detonate!" ]
         , System.view fireworkView
-            [ style "width" "300px"
-            , style "height" "300px"
-            , style "background-color" "#000000"
+            [ style "width" "600px"
+            , style "height" "600px"
+            , style "background-color" "#0F0F0F"
             ]
             model
         ]
@@ -82,17 +101,17 @@ view model =
 fireworkView : Particle Firework -> Svg msg
 fireworkView particle =
     case Particle.data particle of
-        Dot ->
+        Fizzler ->
             Svg.circle
-                [ SAttrs.r "1"
-                , SAttrs.fill "#FFF176"
+                [ SAttrs.r "3"
+                , SAttrs.fill "#DCF1FF"
                 ]
                 []
 
-        Line length ->
+        Streamer ->
             Svg.rect
                 [ SAttrs.height "2"
-                , SAttrs.width (String.fromInt length)
+                , SAttrs.width "100"
                 , SAttrs.fill "#FFF176"
                 , SAttrs.transform <|
                     "rotate("

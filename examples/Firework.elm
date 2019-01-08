@@ -31,9 +31,8 @@ type Firework
 fizzler : Generator (Particle Firework)
 fizzler =
     Particle.init (Random.constant Fizzler)
-        |> Particle.withDirection (Random.map degrees (normal 0 90))
-        |> Particle.withSpeed (Random.constant 200)
-        -- |> Particle.withSpeed (Random.map (clamp 0 400) (normal 200 200))
+        |> Particle.withDirection (Random.map degrees (Random.float 0 360))
+        |> Particle.withSpeed (Random.map (clamp 0 400) (normal 200 200))
         |> Particle.withLifetime (Random.constant 1)
         |> Particle.withDrag
             (\_ ->
@@ -47,11 +46,21 @@ fizzler =
 streamer : Generator (Particle Firework)
 streamer =
     Particle.init (Random.constant Streamer)
+        |> Particle.withDirection (Random.map degrees (Random.float 0 360))
+        |> Particle.withSpeed (Random.map (clamp 0 800) (normal 400 400))
+        |> Particle.withLifetime (Random.constant 1.5)
+        |> Particle.withDrag
+            (\_ ->
+                { coefficient = 1
+                , density = 0.015
+                , area = 3
+                }
+            )
 
 
 firework : Generator (Particle Firework)
 firework =
-    Random.Extra.frequency ( 1, fizzler ) []
+    Random.Extra.frequency ( 1, fizzler ) [ ( 1, streamer ) ]
 
 
 type alias Model =
@@ -73,8 +82,8 @@ update msg model =
             ( System.burst
                 (firework
                     |> Particle.withLocation (Random.constant { x = 300, y = 300 })
-                    -- |> Particle.withGravity 100
-                    |> Random.list 200
+                    |> Particle.withGravity 50
+                    |> Random.list 300
                 )
                 model
             , Cmd.none
@@ -110,9 +119,9 @@ fireworkView particle =
 
         Streamer ->
             Svg.rect
-                [ SAttrs.height "2"
-                , SAttrs.width "100"
-                , SAttrs.fill "#FFF176"
+                [ SAttrs.height "3"
+                , SAttrs.width "15"
+                , SAttrs.fill "#DCF1FF"
                 , SAttrs.transform <|
                     "rotate("
                         ++ String.fromFloat (Particle.directionDegrees particle)

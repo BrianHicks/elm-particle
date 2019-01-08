@@ -444,29 +444,11 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
         deltaSeconds =
             deltaMs / 1000
 
-        dragAtVelocity : Float -> Float
-        dragAtVelocity v =
-            drag.coefficient * drag.area * 0.5 * drag.density * v * v
-
-        applyDrag : Float -> Float
-        applyDrag v =
-            if v > 0 then
-                v - dragAtVelocity v * deltaSeconds
-
-            else
-                v + dragAtVelocity (abs v) * deltaSeconds
-
-        ( positionX, positionY ) =
-            cartesianToTuple position
-
         ( accelerationX, accelerationY ) =
             cartesianToTuple acceleration
 
-        ( velocitySpeed, velocityAngle ) =
-            polarToTuple velocity
-
         ( velocityX, velocityY ) =
-            fromPolar ( velocitySpeed, velocityAngle )
+            velocity |> polarToTuple |> fromPolar
     in
     if lifetime < 0 then
         Nothing
@@ -475,10 +457,12 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
         (Just << Particle)
             { data = particle.data
             , position =
-                Cartesian
-                    ( positionX + velocityX * deltaSeconds + accelerationX * deltaSeconds * deltaSeconds / 2
-                    , positionY + velocityY * deltaSeconds + accelerationY * deltaSeconds * deltaSeconds / 2
-                    )
+                case position of
+                    Cartesian ( x, y ) ->
+                        Cartesian
+                            ( x + velocityX * deltaSeconds + accelerationX * deltaSeconds * deltaSeconds / 2
+                            , y + velocityY * deltaSeconds + accelerationY * deltaSeconds * deltaSeconds / 2
+                            )
             , velocity =
                 let
                     ( newVelocitySpeed, newVelocityAngle ) =
@@ -488,7 +472,7 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
                             )
                 in
                 Polar
-                    { speed = applyDrag newVelocitySpeed
+                    { speed = drag.coefficient * drag.area * 0.5 * drag.density * newVelocitySpeed * newVelocitySpeed
                     , angle = newVelocityAngle
                     }
             , acceleration = acceleration

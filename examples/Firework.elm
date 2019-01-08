@@ -34,13 +34,6 @@ fizzler =
         |> Particle.withDirection (Random.map degrees (Random.float 0 360))
         |> Particle.withSpeed (Random.map (clamp 0 400) (normal 200 200))
         |> Particle.withLifetime (Random.constant 1)
-        |> Particle.withDrag
-            (\_ ->
-                { coefficient = 1
-                , density = 0.015
-                , area = 3
-                }
-            )
 
 
 streamer : Generator (Particle Firework)
@@ -49,13 +42,6 @@ streamer =
         |> Particle.withDirection (Random.map degrees (Random.float 0 360))
         |> Particle.withSpeed (Random.map (clamp 0 800) (normal 400 400))
         |> Particle.withLifetime (Random.constant 1.5)
-        |> Particle.withDrag
-            (\_ ->
-                { coefficient = 1
-                , density = 0.015
-                , area = 3
-                }
-            )
 
 
 firework : Generator (Particle Firework)
@@ -83,6 +69,13 @@ update msg model =
                 (firework
                     |> Particle.withLocation (Random.constant { x = 300, y = 300 })
                     |> Particle.withGravity 50
+                    |> Particle.withDrag
+                        (\_ ->
+                            { coefficient = 1
+                            , density = 0.015
+                            , area = 3
+                            }
+                        )
                     |> Random.list 300
                 )
                 model

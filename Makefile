@@ -12,7 +12,7 @@ docs/tada.png: examples/tada.png
 	@mkdir -p $(@D)
 	cp $^ $@
 
-docs/%-demo.html: examples/%.elm
+docs/%-demo.html: examples/%.elm $(shell find src -name '*.elm')
 	@mkdir -p $(@D)
 	cd $(<D); elm make --optimize --output=../$@ $(<F)
 

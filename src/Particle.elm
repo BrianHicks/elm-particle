@@ -1,6 +1,6 @@
 module Particle exposing
     ( Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag
-    , view, data, lifetimePercent, direction, directionDegrees
+    , view, data, lifetimePercent, direction, directionDegrees, speed
     , update
     )
 
@@ -77,7 +77,7 @@ folder of the source on GitHub. Go check those out!
 
 # Rendering Particles
 
-@docs view, data, lifetimePercent, direction, directionDegrees
+@docs view, data, lifetimePercent, direction, directionDegrees, speed
 
 
 # Simulation
@@ -231,8 +231,8 @@ per second, so you'll have to experiment to make it look good for your use case.
 withSpeed : Generator Float -> Generator (Particle a) -> Generator (Particle a)
 withSpeed =
     Random.map2
-        (\speed (Particle ({ velocity } as particle)) ->
-            Particle { particle | velocity = { velocity | speed = speed } }
+        (\speed_ (Particle ({ velocity } as particle)) ->
+            Particle { particle | velocity = { velocity | speed = speed_ } }
         )
 
 
@@ -408,6 +408,14 @@ directionDegrees particle =
     direction particle * 180 / pi
 
 
+{-| Get the speed the particle is currently traveling. This is useful for motion
+effects like stretching or squashing the shape in response to changes in motion.
+-}
+speed : Particle a -> Float
+speed (Particle { velocity }) =
+    velocity.speed
+
+
 
 -- update
 
@@ -439,13 +447,13 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
                 }
             , velocity =
                 let
-                    ( speed, direction_ ) =
+                    ( speed_, direction_ ) =
                         toPolar
                             ( velocityX + acceleration.x * deltaSeconds
                             , velocityY + acceleration.y * deltaSeconds
                             )
                 in
-                { speed = speed - drag.coefficient * drag.area * 0.5 * drag.density * speed * speed * deltaSeconds
+                { speed = speed_ - drag.coefficient * drag.area * 0.5 * drag.density * speed_ * speed_ * deltaSeconds
                 , direction = direction_
                 }
             , acceleration = acceleration

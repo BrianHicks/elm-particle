@@ -112,8 +112,8 @@ fireworkView particle =
 
         Streamer ->
             Svg.rect
-                [ SAttrs.height "3"
-                , SAttrs.width "15"
+                [ SAttrs.height "2"
+                , Particle.speed particle |> logBase 1.15 |> String.fromFloat |> SAttrs.width
                 , SAttrs.fill "rgb(218, 213, 218)" -- fades to about 70, 65, 70
                 , SAttrs.transform <|
                     "rotate("

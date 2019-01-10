@@ -32,7 +32,7 @@ fizzler : Generator (Particle Firework)
 fizzler =
     Particle.init (Random.constant Fizzler)
         |> Particle.withDirection (Random.map degrees (Random.float 0 360))
-        |> Particle.withSpeed (Random.map (clamp 0 400) (normal 200 200))
+        |> Particle.withSpeed (Random.map (clamp 0 200) (normal 100 100))
         |> Particle.withLifetime (normal 3 0.25)
 
 

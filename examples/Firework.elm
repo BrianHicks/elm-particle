@@ -42,7 +42,7 @@ streamer =
         |> Particle.withDirection (Random.map degrees (Random.float 0 360))
         |> Particle.withSpeed (Random.map (clamp 0 800) (normal 500 400))
         |> Particle.withLifetime (normal 5 0.25)
-        |> Particle.withHistory (Random.constant 1)
+        |> Particle.withHistory (Random.constant (Particle.Distance 25))
 
 
 firework : Generator (Particle Firework)
@@ -114,7 +114,7 @@ fireworkView particle =
         Streamer ->
             Svg.path
                 [ Particle.history particle
-                    |> List.map (\{ x, y } -> "l " ++ String.fromFloat x ++ "," ++ String.fromFloat y)
+                    |> List.map (\( _, { x, y } ) -> "l " ++ String.fromFloat x ++ "," ++ String.fromFloat y)
                     |> String.join " "
                     |> (++) "M 0,0 "
                     |> SAttrs.d

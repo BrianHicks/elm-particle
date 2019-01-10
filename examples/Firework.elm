@@ -42,6 +42,7 @@ streamer =
         |> Particle.withDirection (Random.map degrees (Random.float 0 360))
         |> Particle.withSpeed (Random.map (clamp 0 800) (normal 500 400))
         |> Particle.withLifetime (normal 5 0.25)
+        |> Particle.withHistory (Random.constant 1)
 
 
 firework : Generator (Particle Firework)
@@ -111,16 +112,29 @@ fireworkView particle =
                 []
 
         Streamer ->
-            Svg.rect
-                [ SAttrs.height "2"
-                , Particle.speed particle |> logBase 1.15 |> String.fromFloat |> SAttrs.width
-                , SAttrs.fill "rgb(218, 213, 218)" -- fades to about 70, 65, 70
-                , SAttrs.transform <|
-                    "rotate("
-                        ++ String.fromFloat (Particle.directionDegrees particle)
-                        ++ ")"
+            Svg.path
+                [ Particle.history particle
+                    |> List.map (\{ x, y } -> "l " ++ String.fromFloat x ++ "," ++ String.fromFloat y)
+                    |> String.join " "
+                    |> (++) "M 0,0 "
+                    |> SAttrs.d
+                , SAttrs.stroke "rgb(218, 213, 218)"
+                , SAttrs.fill "none"
                 ]
                 []
+
+
+
+-- Svg.rect
+--     [ SAttrs.height "2"
+--     , SAttrs.width "20"
+--     , SAttrs.fill "rgb(218, 213, 218)" -- fades to about 70, 65, 70
+--     , SAttrs.transform <|
+--         "rotate("
+--             ++ String.fromFloat (Particle.directionDegrees particle)
+--             ++ ")"
+--     ]
+--     []
 
 
 main : Program () (System Firework) Msg

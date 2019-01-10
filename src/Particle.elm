@@ -1,6 +1,6 @@
 module Particle exposing
-    ( Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag
-    , view, data, lifetimePercent, direction, directionDegrees, speed
+    ( Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag, withHistory
+    , view, data, lifetimePercent, direction, directionDegrees, speed, history
     , update
     )
 
@@ -72,12 +72,12 @@ folder of the source on GitHub. Go check those out!
 
 # Constructing Particles
 
-@docs Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag
+@docs Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag, withHistory
 
 
 # Rendering Particles
 
-@docs view, data, lifetimePercent, direction, directionDegrees, speed
+@docs view, data, lifetimePercent, direction, directionDegrees, speed, history
 
 
 # Simulation
@@ -103,6 +103,8 @@ type Particle a
         , drag : { density : Float, area : Float, coefficient : Float }
         , originalLifetime : Float
         , lifetime : Float
+        , historyAmount : Int
+        , history : List Cartesian
         }
 
 
@@ -140,6 +142,8 @@ init generator =
                 , drag = { density = 0, area = 0, coefficient = 0 }
                 , originalLifetime = positiveInfinity
                 , lifetime = positiveInfinity
+                , historyAmount = 0
+                , history = []
                 }
         )
         generator
@@ -332,6 +336,13 @@ withDrag drag =
     Random.map (\(Particle particle) -> Particle { particle | drag = drag particle.data })
 
 
+{-| TODO docs
+-}
+withHistory : Generator Int -> Generator (Particle a) -> Generator (Particle a)
+withHistory =
+    Random.map2 (\history_ (Particle particle) -> Particle { particle | historyAmount = history_ })
+
+
 
 -- view helpers
 
@@ -416,6 +427,13 @@ speed (Particle { velocity }) =
     velocity.speed
 
 
+{-| TODO docs. It's deltas!
+-}
+history : Particle a -> List { x : Float, y : Float }
+history (Particle particle) =
+    particle.history
+
+
 
 -- update
 
@@ -434,6 +452,11 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
 
         ( velocityX, velocityY ) =
             fromPolar ( velocity.speed, velocity.direction )
+
+        newPosition =
+            { x = position.x + velocityX * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
+            , y = position.y + velocityY * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
+            }
     in
     if lifetime < 0 then
         Nothing
@@ -441,10 +464,7 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
     else
         (Just << Particle)
             { data = particle.data
-            , position =
-                { x = position.x + velocityX * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
-                , y = position.y + velocityY * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
-                }
+            , position = newPosition
             , velocity =
                 let
                     ( speed_, direction_ ) =
@@ -460,6 +480,13 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
             , drag = drag
             , originalLifetime = particle.originalLifetime
             , lifetime = lifetime - deltaSeconds
+            , historyAmount = particle.historyAmount
+            , history =
+                if particle.historyAmount > 0 then
+                    { x = position.x - newPosition.x, y = position.y - newPosition.y } :: particle.history
+
+                else
+                    particle.history
             }
 
 

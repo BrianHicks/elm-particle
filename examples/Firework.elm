@@ -97,8 +97,16 @@ fireworkView : Particle Firework -> Svg msg
 fireworkView particle =
     case Particle.data particle of
         Fizzler ->
-            Svg.circle
-                [ SAttrs.r "2"
+            let
+                length =
+                    max 2 (Particle.speed particle / 15)
+            in
+            Svg.ellipse
+                [ SAttrs.cx (String.fromFloat (length / 2))
+                , SAttrs.cy "0"
+                , SAttrs.rx (String.fromFloat length)
+                , SAttrs.ry "2"
+                , SAttrs.transform ("rotate(" ++ String.fromFloat (Particle.directionDegrees particle) ++ ")")
                 , SAttrs.fill "rgb(186, 198, 209)" -- might be 186 198 209
                 ]
                 []

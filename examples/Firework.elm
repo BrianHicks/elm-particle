@@ -25,7 +25,6 @@ import Svg.Attributes as SAttrs
 
 type Firework
     = Fizzler
-    | Streamer
 
 
 fizzler : Generator (Particle Firework)
@@ -36,18 +35,19 @@ fizzler =
         |> Particle.withLifetime (normal 3 0.25)
 
 
-streamer : Generator (Particle Firework)
-streamer =
-    Particle.init (Random.constant Streamer)
-        |> Particle.withDirection (Random.map degrees (Random.float 0 360))
-        |> Particle.withSpeed (Random.map (clamp 0 800) (normal 500 400))
-        |> Particle.withLifetime (normal 5 0.25)
-        |> Particle.withHistory (Random.constant (Particle.Distance 25))
-
-
-firework : Generator (Particle Firework)
-firework =
-    Random.Extra.frequency ( 1, fizzler ) [ ( 1, streamer ) ]
+fireworkAt : Float -> Float -> Generator (List (Particle Firework))
+fireworkAt x y =
+    fizzler
+        |> Particle.withLocation (Random.constant { x = x, y = y })
+        |> Particle.withGravity 50
+        |> Particle.withDrag
+            (\_ ->
+                { coefficient = 1
+                , density = 0.015
+                , area = 3
+                }
+            )
+        |> Random.list 150
 
 
 type alias Model =
@@ -67,17 +67,9 @@ update msg model =
 
         Detonate ->
             ( System.burst
-                (firework
-                    |> Particle.withLocation (Random.constant { x = 300, y = 300 })
-                    |> Particle.withGravity 50
-                    |> Particle.withDrag
-                        (\_ ->
-                            { coefficient = 1
-                            , density = 0.015
-                            , area = 3
-                            }
-                        )
-                    |> Random.list 300
+                (Random.Extra.andThen2 fireworkAt
+                    (normal 300 100)
+                    (normal 300 100)
                 )
                 model
             , Cmd.none
@@ -110,31 +102,6 @@ fireworkView particle =
                 , SAttrs.fill "rgb(186, 198, 209)" -- might be 186 198 209
                 ]
                 []
-
-        Streamer ->
-            Svg.path
-                [ Particle.history particle
-                    |> List.map (\( _, { x, y } ) -> "l " ++ String.fromFloat x ++ "," ++ String.fromFloat y)
-                    |> String.join " "
-                    |> (++) "M 0,0 "
-                    |> SAttrs.d
-                , SAttrs.stroke "rgb(218, 213, 218)"
-                , SAttrs.fill "none"
-                ]
-                []
-
-
-
--- Svg.rect
---     [ SAttrs.height "2"
---     , SAttrs.width "20"
---     , SAttrs.fill "rgb(218, 213, 218)" -- fades to about 70, 65, 70
---     , SAttrs.transform <|
---         "rotate("
---             ++ String.fromFloat (Particle.directionDegrees particle)
---             ++ ")"
---     ]
---     []
 
 
 main : Program () (System Firework) Msg

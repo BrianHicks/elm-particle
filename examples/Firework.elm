@@ -114,6 +114,16 @@ fireworkView particle =
 
                 luminanceDelta =
                     maxLuminance - luminance
+
+                lifetime =
+                    Particle.lifetimePercent particle
+
+                opacity =
+                    if lifetime < 0.1 then
+                        lifetime * 10
+
+                    else
+                        1
             in
             Svg.ellipse
                 [ -- location within the burst
@@ -126,11 +136,12 @@ fireworkView particle =
                 , SAttrs.transform ("rotate(" ++ String.fromFloat (Particle.directionDegrees particle) ++ ")")
 
                 -- color!
+                , SAttrs.opacity (String.fromFloat opacity)
                 , SAttrs.fill
                     (hslString
                         hue
                         saturation
-                        (maxLuminance - luminanceDelta * (1 - Particle.lifetimePercent particle))
+                        (maxLuminance - luminanceDelta * (1 - lifetime))
                     )
                 ]
                 []

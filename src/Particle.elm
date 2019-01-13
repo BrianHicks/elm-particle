@@ -261,7 +261,7 @@ other than gravity! So if you have a concrete use case for going sideways or up,
 -}
 withGravity : Float -> Generator (Particle a) -> Generator (Particle a)
 withGravity pxPerSecond =
-    -- TODO: should this only update `y` instead of both `x` and `y`? It will
+    -- TODO: should this only update `y` instead of both `x` and `y`? It would
     -- cause issues for wind, for example.
     Random.map (\(Particle particle) -> Particle { particle | acceleration = { x = 0, y = pxPerSecond } })
 

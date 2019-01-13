@@ -24,20 +24,26 @@ import Svg.Attributes as SAttrs
 
 
 type Firework
-    = Fizzler
+    = Fizzler Color
 
 
-fizzler : Generator (Particle Firework)
-fizzler =
-    Particle.init (Random.constant Fizzler)
+type Color
+    = Red
+    | Green
+    | Blue
+
+
+fizzler : Color -> Generator (Particle Firework)
+fizzler color =
+    Particle.init (Random.constant (Fizzler color))
         |> Particle.withDirection (Random.map degrees (Random.float 0 360))
         |> Particle.withSpeed (Random.map (clamp 0 200) (normal 100 100))
         |> Particle.withLifetime (normal 3 0.25)
 
 
-fireworkAt : Float -> Float -> Generator (List (Particle Firework))
-fireworkAt x y =
-    fizzler
+fireworkAt : Color -> Float -> Float -> Generator (List (Particle Firework))
+fireworkAt color x y =
+    fizzler color
         |> Particle.withLocation (Random.constant { x = x, y = y })
         |> Particle.withGravity 50
         |> Particle.withDrag
@@ -67,7 +73,8 @@ update msg model =
 
         Detonate ->
             ( System.burst
-                (Random.Extra.andThen2 fireworkAt
+                (Random.Extra.andThen3 fireworkAt
+                    (Random.uniform Red [ Green, Blue ])
                     (normal 300 100)
                     (normal 300 100)
                 )
@@ -96,10 +103,19 @@ view model =
 fireworkView : Particle Firework -> Svg msg
 fireworkView particle =
     case Particle.data particle of
-        Fizzler ->
+        Fizzler color ->
             let
                 length =
                     max 2 (Particle.speed particle / 15)
+
+                ( hue, saturation, luminance ) =
+                    toHsl color
+
+                maxLuminance =
+                    100
+
+                luminanceDelta =
+                    maxLuminance - luminance
             in
             Svg.ellipse
                 [ SAttrs.cx (String.fromFloat (length / 2))
@@ -107,9 +123,36 @@ fireworkView particle =
                 , SAttrs.rx (String.fromFloat length)
                 , SAttrs.ry "2"
                 , SAttrs.transform ("rotate(" ++ String.fromFloat (Particle.directionDegrees particle) ++ ")")
-                , SAttrs.fill "#EEEEEC"
+                , SAttrs.fill
+                    ("hsl("
+                        ++ String.fromFloat hue
+                        ++ ","
+                        ++ String.fromFloat saturation
+                        ++ "%,"
+                        ++ String.fromFloat (maxLuminance - luminanceDelta * (1 - Particle.lifetimePercent particle))
+                        ++ "%)"
+                    )
                 ]
                 []
+
+
+{-| Using the tango palette:
+<http://tango.freedesktop.org/Tango_Icon_Theme_Guidelines>
+-}
+toHsl : Color -> ( Float, Float, Float )
+toHsl color =
+    case color of
+        Red ->
+            -- scarlet red
+            ( 0, 86, 55 )
+
+        Green ->
+            -- chameleon
+            ( 90, 75, 55 )
+
+        Blue ->
+            -- sky blue
+            ( 211, 49, 63 )
 
 
 main : Program () (System Firework) Msg

@@ -129,13 +129,10 @@ fireworkView particle =
 
                 -- color!
                 , SAttrs.fill
-                    ("hsl("
-                        ++ String.fromFloat hue
-                        ++ ","
-                        ++ String.fromFloat saturation
-                        ++ "%,"
-                        ++ String.fromFloat (maxLuminance - luminanceDelta * (1 - Particle.lifetimePercent particle))
-                        ++ "%)"
+                    (hslString
+                        hue
+                        saturation
+                        (maxLuminance - luminanceDelta * (1 - Particle.lifetimePercent particle))
                     )
                 ]
                 []
@@ -158,6 +155,17 @@ toHsl color =
         Blue ->
             -- sky blue
             ( 211, 49, 63 )
+
+
+hslString : Float -> Float -> Float -> String
+hslString hue saturation luminance =
+    "hsl("
+        ++ String.fromFloat hue
+        ++ ","
+        ++ String.fromFloat saturation
+        ++ "%,"
+        ++ String.fromFloat luminance
+        ++ "%)"
 
 
 main : Program () (System Firework) Msg

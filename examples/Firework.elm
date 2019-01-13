@@ -118,11 +118,16 @@ fireworkView particle =
                     maxLuminance - luminance
             in
             Svg.ellipse
-                [ SAttrs.cx (String.fromFloat (length / 2))
+                [ -- location within the burst
+                  SAttrs.cx (String.fromFloat (length / 2))
                 , SAttrs.cy "0"
+
+                -- size, smeared by motion
                 , SAttrs.rx (String.fromFloat length)
                 , SAttrs.ry "2"
                 , SAttrs.transform ("rotate(" ++ String.fromFloat (Particle.directionDegrees particle) ++ ")")
+
+                -- color!
                 , SAttrs.fill
                     ("hsl("
                         ++ String.fromFloat hue

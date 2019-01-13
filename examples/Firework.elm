@@ -147,7 +147,7 @@ fireworkView particle =
                 []
 
 
-{-| Using the tango palette:
+{-| Using the tango palette, but a little lighter. Original colors at
 <http://tango.freedesktop.org/Tango_Icon_Theme_Guidelines>
 -}
 toHsl : Color -> ( Float, Float, Float )
@@ -155,15 +155,15 @@ toHsl color =
     case color of
         Red ->
             -- scarlet red
-            ( 0, 86, 55 )
+            ( 0, 86, 75 )
 
         Green ->
             -- chameleon
-            ( 90, 75, 55 )
+            ( 90, 75, 75 )
 
         Blue ->
             -- sky blue
-            ( 211, 49, 63 )
+            ( 211, 49, 83 )
 
 
 hslString : Float -> Float -> Float -> String

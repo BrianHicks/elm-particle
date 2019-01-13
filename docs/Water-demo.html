@@ -529,11 +529,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.T.E === region.ab.E)
+	if (region.T.F === region.ab.F)
 	{
-		return 'on line ' + region.T.E;
+		return 'on line ' + region.T.F;
 	}
-	return 'on lines ' + region.T.E + ' through ' + region.ab.E;
+	return 'on lines ' + region.T.F + ' through ' + region.ab.F;
 }
 
 
@@ -2669,7 +2669,7 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		k: func(record.k),
+		l: func(record.l),
 		U: record.U,
 		S: record.S
 	}
@@ -2939,7 +2939,7 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.k;
+		var message = !tag ? value : tag < 3 ? value.a : value.l;
 		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.U;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
@@ -3970,7 +3970,7 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 		impl.aN,
 		impl.aL,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.I && impl.I(sendToApp)
+			var divertHrefToApp = impl.J && impl.J(sendToApp)
 			var view = impl.aP;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
@@ -4045,7 +4045,7 @@ function _Browser_application(impl)
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		I: function(sendToApp)
+		J: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4238,7 +4238,7 @@ function _Browser_getViewport()
 		av: {
 			aR: _Browser_window.pageXOffset,
 			aS: _Browser_window.pageYOffset,
-			A: _Browser_doc.documentElement.clientWidth,
+			B: _Browser_doc.documentElement.clientWidth,
 			v: _Browser_doc.documentElement.clientHeight
 		}
 	};
@@ -4249,7 +4249,7 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		A: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		B: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
 		v: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
@@ -4274,13 +4274,13 @@ function _Browser_getViewportOf(id)
 	{
 		return {
 			as: {
-				A: node.scrollWidth,
+				B: node.scrollWidth,
 				v: node.scrollHeight
 			},
 			av: {
 				aR: node.scrollLeft,
 				aS: node.scrollTop,
-				A: node.clientWidth,
+				B: node.clientWidth,
 				v: node.clientHeight
 			}
 		};
@@ -4315,13 +4315,13 @@ function _Browser_getElement(id)
 			av: {
 				aR: x,
 				aS: y,
-				A: _Browser_doc.documentElement.clientWidth,
+				B: _Browser_doc.documentElement.clientWidth,
 				v: _Browser_doc.documentElement.clientHeight
 			},
 			aA: {
 				aR: x + rect.left,
 				aS: y + rect.top,
-				A: rect.width,
+				B: rect.width,
 				v: rect.height
 			}
 		};
@@ -4359,7 +4359,7 @@ function _Browser_load(url)
 }
 var author$project$Particle$data = function (_n0) {
 	var particle = _n0;
-	return particle.C;
+	return particle.D;
 };
 var elm$core$Maybe$Just = function (a) {
 	return {$: 0, a: a};
@@ -4877,7 +4877,7 @@ var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
 var elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
 var author$project$Particle$view = F2(
 	function (viewData, particle) {
-		var position = particle.G;
+		var position = particle.H;
 		return A2(
 			elm$svg$Svg$g,
 			_List_fromArray(
@@ -5158,12 +5158,12 @@ var author$project$Particle$init = function (generator) {
 		function (a) {
 			return {
 				O: {aR: 0, aS: 0},
-				C: a,
+				D: a,
 				P: {W: 0, Y: 0, aa: 0},
-				D: author$project$Particle$positiveInfinity,
-				F: author$project$Particle$positiveInfinity,
-				G: {aR: 0, aS: 0},
-				n: {t: 0, J: 0}
+				E: author$project$Particle$positiveInfinity,
+				G: author$project$Particle$positiveInfinity,
+				H: {aR: 0, aS: 0},
+				j: {t: 0, z: 0}
 			};
 		},
 		generator);
@@ -5175,11 +5175,11 @@ var author$project$Particle$withDirection = elm$random$Random$map2(
 	F2(
 		function (direction_, _n0) {
 			var particle = _n0;
-			var velocity = particle.n;
+			var velocity = particle.j;
 			return _Utils_update(
 				particle,
 				{
-					n: _Utils_update(
+					j: _Utils_update(
 						velocity,
 						{
 							t: direction_ - elm$core$Basics$degrees(90)
@@ -5203,7 +5203,7 @@ var author$project$Particle$withLifetime = elm$random$Random$map2(
 			var particle = _n0;
 			return _Utils_update(
 				particle,
-				{D: lifetime, F: lifetime});
+				{E: lifetime, G: lifetime});
 		}));
 var author$project$Particle$withLocation = elm$random$Random$map2(
 	F2(
@@ -5211,19 +5211,19 @@ var author$project$Particle$withLocation = elm$random$Random$map2(
 			var particle = _n0;
 			return _Utils_update(
 				particle,
-				{G: position});
+				{H: position});
 		}));
 var author$project$Particle$withSpeed = elm$random$Random$map2(
 	F2(
-		function (speed, _n0) {
+		function (speed_, _n0) {
 			var particle = _n0;
-			var velocity = particle.n;
+			var velocity = particle.j;
 			return _Utils_update(
 				particle,
 				{
-					n: _Utils_update(
+					j: _Utils_update(
 						velocity,
-						{J: speed})
+						{z: speed_})
 				});
 		}));
 var elm$random$Random$constant = function (value) {
@@ -5287,7 +5287,7 @@ var author$project$Main$waterEmitter = function (delta) {
 };
 var author$project$Particle$System$System = elm$core$Basics$identity;
 var author$project$Particle$System$init = function (seed) {
-	return {r: _List_Nil, H: seed};
+	return {r: _List_Nil, I: seed};
 };
 var author$project$Particle$System$NewFrame = F3(
 	function (a, b, c) {
@@ -5308,7 +5308,7 @@ var elm$random$Random$step = F2(
 	});
 var author$project$Particle$System$emitterParticles = F3(
 	function (delta, emitters, _n0) {
-		var seed = _n0.H;
+		var seed = _n0.I;
 		return A3(
 			elm$core$List$foldl,
 			F2(
@@ -5718,30 +5718,31 @@ var elm$core$Basics$toPolar = function (_n0) {
 var author$project$Particle$update = F2(
 	function (deltaMs, _n0) {
 		var particle = _n0;
-		var position = particle.G;
-		var velocity = particle.n;
+		var position = particle.H;
+		var velocity = particle.j;
 		var acceleration = particle.O;
 		var drag = particle.P;
-		var lifetime = particle.D;
+		var lifetime = particle.E;
 		var deltaSeconds = deltaMs / 1000;
 		var _n1 = elm$core$Basics$fromPolar(
-			_Utils_Tuple2(velocity.J, velocity.t));
+			_Utils_Tuple2(velocity.z, velocity.t));
 		var velocityX = _n1.a;
 		var velocityY = _n1.b;
+		var newPosition = {aR: (position.aR + (velocityX * deltaSeconds)) + (((acceleration.aR * deltaSeconds) * deltaSeconds) / 2), aS: (position.aS + (velocityY * deltaSeconds)) + (((acceleration.aS * deltaSeconds) * deltaSeconds) / 2)};
 		return (lifetime < 0) ? elm$core$Maybe$Nothing : A2(elm$core$Basics$composeL, elm$core$Maybe$Just, elm$core$Basics$identity)(
 			{
 				O: acceleration,
-				C: particle.C,
+				D: particle.D,
 				P: drag,
-				D: lifetime - deltaSeconds,
-				F: particle.F,
-				G: {aR: (position.aR + (velocityX * deltaSeconds)) + (((acceleration.aR * deltaSeconds) * deltaSeconds) / 2), aS: (position.aS + (velocityY * deltaSeconds)) + (((acceleration.aS * deltaSeconds) * deltaSeconds) / 2)},
-				n: function () {
+				E: lifetime - deltaSeconds,
+				G: particle.G,
+				H: newPosition,
+				j: function () {
 					var _n2 = elm$core$Basics$toPolar(
 						_Utils_Tuple2(velocityX + (acceleration.aR * deltaSeconds), velocityY + (acceleration.aS * deltaSeconds)));
-					var speed = _n2.a;
+					var speed_ = _n2.a;
 					var direction_ = _n2.b;
-					return {t: direction_, J: speed - ((((((drag.Y * drag.W) * 0.5) * drag.aa) * speed) * speed) * deltaSeconds)};
+					return {t: direction_, z: speed_ - ((((((drag.Y * drag.W) * 0.5) * drag.aa) * speed_) * speed_) * deltaSeconds)};
 				}()
 			});
 	});
@@ -5774,7 +5775,7 @@ var author$project$Particle$System$update = F2(
 				elm$core$List$filterMap,
 				author$project$Particle$update(delta),
 				_Utils_ap(particles, system.r)),
-			H: seed
+			I: seed
 		};
 	});
 var elm$browser$Browser$element = _Browser_element;

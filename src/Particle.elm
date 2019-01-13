@@ -408,8 +408,8 @@ directionDegrees particle =
     direction particle * 180 / pi
 
 
-{-| Get the speed the particle is currently traveling. This is useful for motion
-effects like stretching or squashing the shape in response to changes in motion.
+{-| Get the speed the particle is currently traveling. This is useful for doing
+things like stretching or squashing the shape in response to changes in motion.
 -}
 speed : Particle a -> Float
 speed (Particle { velocity }) =

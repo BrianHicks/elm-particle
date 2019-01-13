@@ -19,7 +19,7 @@ You can see fully worked examples online:
 
 - 🎉 [Confetti](https://brianhicks.github.io/elm-particle/Confetti.html)
 - 🚰 [Water](https://brianhicks.github.io/elm-particle/Water.html)
-- 🎇 [A Simple Firework](https://brianhicks.github.io/elm-particle/Firework.html)
+- 🎇 [Fireworks](https://brianhicks.github.io/elm-particle/Firework.html)
 
 The source for these examples all live in the `examples` directory on GitHub.
 

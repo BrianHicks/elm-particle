@@ -107,7 +107,7 @@ fireworkView particle =
                 , SAttrs.rx (String.fromFloat length)
                 , SAttrs.ry "2"
                 , SAttrs.transform ("rotate(" ++ String.fromFloat (Particle.directionDegrees particle) ++ ")")
-                , SAttrs.fill "rgb(186, 198, 209)" -- might be 186 198 209
+                , SAttrs.fill "#EEEEEC"
                 ]
                 []
 

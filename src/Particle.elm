@@ -1,6 +1,6 @@
 module Particle exposing
     ( Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag
-    , view, data, lifetimePercent, direction, directionDegrees
+    , view, data, lifetimePercent, direction, directionDegrees, speed
     , update
     )
 
@@ -77,7 +77,7 @@ folder of the source on GitHub. Go check those out!
 
 # Rendering Particles
 
-@docs view, data, lifetimePercent, direction, directionDegrees
+@docs view, data, lifetimePercent, direction, directionDegrees, speed
 
 
 # Simulation
@@ -231,8 +231,8 @@ per second, so you'll have to experiment to make it look good for your use case.
 withSpeed : Generator Float -> Generator (Particle a) -> Generator (Particle a)
 withSpeed =
     Random.map2
-        (\speed (Particle ({ velocity } as particle)) ->
-            Particle { particle | velocity = { velocity | speed = speed } }
+        (\speed_ (Particle ({ velocity } as particle)) ->
+            Particle { particle | velocity = { velocity | speed = speed_ } }
         )
 
 
@@ -261,7 +261,7 @@ other than gravity! So if you have a concrete use case for going sideways or up,
 -}
 withGravity : Float -> Generator (Particle a) -> Generator (Particle a)
 withGravity pxPerSecond =
-    -- TODO: should this only update `y` instead of both `x` and `y`? It will
+    -- TODO: should this only update `y` instead of both `x` and `y`? It would
     -- cause issues for wind, for example.
     Random.map (\(Particle particle) -> Particle { particle | acceleration = { x = 0, y = pxPerSecond } })
 
@@ -408,6 +408,14 @@ directionDegrees particle =
     direction particle * 180 / pi
 
 
+{-| Get the speed the particle is currently traveling. This is useful for doing
+things like stretching or squashing the shape in response to changes in motion.
+-}
+speed : Particle a -> Float
+speed (Particle { velocity }) =
+    velocity.speed
+
+
 
 -- update
 
@@ -426,6 +434,11 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
 
         ( velocityX, velocityY ) =
             fromPolar ( velocity.speed, velocity.direction )
+
+        newPosition =
+            { x = position.x + velocityX * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
+            , y = position.y + velocityY * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
+            }
     in
     if lifetime < 0 then
         Nothing
@@ -433,19 +446,16 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
     else
         (Just << Particle)
             { data = particle.data
-            , position =
-                { x = position.x + velocityX * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
-                , y = position.y + velocityY * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
-                }
+            , position = newPosition
             , velocity =
                 let
-                    ( speed, direction_ ) =
+                    ( speed_, direction_ ) =
                         toPolar
                             ( velocityX + acceleration.x * deltaSeconds
                             , velocityY + acceleration.y * deltaSeconds
                             )
                 in
-                { speed = speed - drag.coefficient * drag.area * 0.5 * drag.density * speed * speed * deltaSeconds
+                { speed = speed_ - drag.coefficient * drag.area * 0.5 * drag.density * speed_ * speed_ * deltaSeconds
                 , direction = direction_
                 }
             , acceleration = acceleration

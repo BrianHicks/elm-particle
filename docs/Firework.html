@@ -22,6 +22,14 @@
       <pre><code class="elm">
 module Main exposing (main)
 
+{-| HEADS UP! You can view this example alongside the running code at
+<https://brianhicks.github.io/elm-particle/Firework.html>
+
+We're going to make a firework, specifically one that looks like this stock
+video: <https://videos.pexels.com/videos/fireworks-display-854341>
+
+-}
+
 import Browser exposing (Document)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
@@ -36,15 +44,36 @@ import Svg.Attributes as SAttrs
 
 
 type Firework
-    = Dot
-    | Line Int
+    = Fizzler Color
 
 
-firework : Generator Firework
-firework =
-    Random.Extra.frequency
-        ( 1 / 8, Random.map (Line << max 3 << floor) (normal 15 6) )
-        [ ( 7 / 8, Random.constant Dot ) ]
+type Color
+    = Red
+    | Green
+    | Blue
+
+
+fizzler : Color -> Generator (Particle Firework)
+fizzler color =
+    Particle.init (Random.constant (Fizzler color))
+        |> Particle.withDirection (Random.map degrees (Random.float 0 360))
+        |> Particle.withSpeed (Random.map (clamp 0 200) (normal 100 100))
+        |> Particle.withLifetime (normal 3 0.25)
+
+
+fireworkAt : Color -> Float -> Float -> Generator (List (Particle Firework))
+fireworkAt color x y =
+    fizzler color
+        |> Particle.withLocation (Random.constant { x = x, y = y })
+        |> Particle.withGravity 50
+        |> Particle.withDrag
+            (\_ ->
+                { coefficient = 1
+                , density = 0.015
+                , area = 3
+                }
+            )
+        |> Random.list 150
 
 
 type alias Model =
@@ -64,20 +93,10 @@ update msg model =
 
         Detonate ->
             ( System.burst
-                (Particle.init firework
-                    |> Particle.withLocation (Random.constant { x = 150, y = 300 })
-                    |> Particle.withDirection (normal 0 (degrees 15))
-                    |> Particle.withSpeed (normal 500 100)
-                    |> Particle.withLifetime (Random.constant 1)
-                    |> Particle.withGravity 100
-                    |> Particle.withDrag
-                        (\_ ->
-                            { coefficient = 1
-                            , density = 0.001226
-                            , area = 3
-                            }
-                        )
-                    |> Random.list 100
+                (Random.Extra.andThen3 fireworkAt
+                    (Random.uniform Red [ Green, Blue ])
+                    (normal 300 100)
+                    (normal 300 100)
                 )
                 model
             , Cmd.none
@@ -93,9 +112,9 @@ view model =
             ]
             [ Html.text "Detonate!" ]
         , System.view fireworkView
-            [ style "width" "300px"
-            , style "height" "300px"
-            , style "background-color" "#000000"
+            [ style "width" "600px"
+            , style "height" "600px"
+            , style "background-color" "#0F0F0F"
             ]
             model
         ]
@@ -104,24 +123,80 @@ view model =
 fireworkView : Particle Firework -> Svg msg
 fireworkView particle =
     case Particle.data particle of
-        Dot ->
-            Svg.circle
-                [ SAttrs.r "1"
-                , SAttrs.fill "#FFF176"
+        Fizzler color ->
+            let
+                length =
+                    max 2 (Particle.speed particle / 15)
+
+                ( hue, saturation, luminance ) =
+                    toHsl color
+
+                maxLuminance =
+                    100
+
+                luminanceDelta =
+                    maxLuminance - luminance
+
+                lifetime =
+                    Particle.lifetimePercent particle
+
+                opacity =
+                    if lifetime < 0.1 then
+                        lifetime * 10
+
+                    else
+                        1
+            in
+            Svg.ellipse
+                [ -- location within the burst
+                  SAttrs.cx (String.fromFloat (length / 2))
+                , SAttrs.cy "0"
+
+                -- size, smeared by motion
+                , SAttrs.rx (String.fromFloat length)
+                , SAttrs.ry "2"
+                , SAttrs.transform ("rotate(" ++ String.fromFloat (Particle.directionDegrees particle) ++ ")")
+
+                -- color!
+                , SAttrs.opacity (String.fromFloat opacity)
+                , SAttrs.fill
+                    (hslString
+                        hue
+                        saturation
+                        (maxLuminance - luminanceDelta * (1 - lifetime))
+                    )
                 ]
                 []
 
-        Line length ->
-            Svg.rect
-                [ SAttrs.height "2"
-                , SAttrs.width (String.fromInt length)
-                , SAttrs.fill "#FFF176"
-                , SAttrs.transform <|
-                    "rotate("
-                        ++ String.fromFloat (Particle.directionDegrees particle)
-                        ++ ")"
-                ]
-                []
+
+{-| Using the tango palette, but a little lighter. Original colors at
+<http://tango.freedesktop.org/Tango_Icon_Theme_Guidelines>
+-}
+toHsl : Color -> ( Float, Float, Float )
+toHsl color =
+    case color of
+        Red ->
+            -- scarlet red
+            ( 0, 86, 75 )
+
+        Green ->
+            -- chameleon
+            ( 90, 75, 75 )
+
+        Blue ->
+            -- sky blue
+            ( 211, 49, 83 )
+
+
+hslString : Float -> Float -> Float -> String
+hslString hue saturation luminance =
+    "hsl("
+        ++ String.fromFloat hue
+        ++ ","
+        ++ String.fromFloat saturation
+        ++ "%,"
+        ++ String.fromFloat luminance
+        ++ "%)"
 
 
 main : Program () (System Firework) Msg

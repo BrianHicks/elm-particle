@@ -794,11 +794,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.T.E === region.Y.E)
+	if (region.T.F === region.Y.F)
 	{
-		return 'on line ' + region.T.E;
+		return 'on line ' + region.T.F;
 	}
-	return 'on lines ' + region.T.E + ' through ' + region.Y.E;
+	return 'on lines ' + region.T.F + ' through ' + region.Y.F;
 }
 
 
@@ -2706,7 +2706,7 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		k: func(record.k),
+		l: func(record.l),
 		U: record.U,
 		S: record.S
 	}
@@ -2976,7 +2976,7 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.k;
+		var message = !tag ? value : tag < 3 ? value.a : value.l;
 		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.U;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
@@ -3970,7 +3970,7 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 		impl.aL,
 		impl.aJ,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.I && impl.I(sendToApp)
+			var divertHrefToApp = impl.J && impl.J(sendToApp)
 			var view = impl.aN;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
@@ -4045,7 +4045,7 @@ function _Browser_application(impl)
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		I: function(sendToApp)
+		J: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4238,7 +4238,7 @@ function _Browser_getViewport()
 		aq: {
 			aP: _Browser_window.pageXOffset,
 			aQ: _Browser_window.pageYOffset,
-			A: _Browser_doc.documentElement.clientWidth,
+			B: _Browser_doc.documentElement.clientWidth,
 			v: _Browser_doc.documentElement.clientHeight
 		}
 	};
@@ -4249,7 +4249,7 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		A: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		B: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
 		v: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
@@ -4274,13 +4274,13 @@ function _Browser_getViewportOf(id)
 	{
 		return {
 			an: {
-				A: node.scrollWidth,
+				B: node.scrollWidth,
 				v: node.scrollHeight
 			},
 			aq: {
 				aP: node.scrollLeft,
 				aQ: node.scrollTop,
-				A: node.clientWidth,
+				B: node.clientWidth,
 				v: node.clientHeight
 			}
 		};
@@ -4315,13 +4315,13 @@ function _Browser_getElement(id)
 			aq: {
 				aP: x,
 				aQ: y,
-				A: _Browser_doc.documentElement.clientWidth,
+				B: _Browser_doc.documentElement.clientWidth,
 				v: _Browser_doc.documentElement.clientHeight
 			},
 			ay: {
 				aP: x + rect.left,
 				aQ: y + rect.top,
-				A: rect.width,
+				B: rect.width,
 				v: rect.height
 			}
 		};
@@ -4360,15 +4360,11 @@ function _Browser_load(url)
 var author$project$Main$ParticleMsg = function (a) {
 	return {$: 0, a: a};
 };
-var author$project$Main$Dot = {$: 0};
-var author$project$Main$Line = function (a) {
-	return {$: 1, a: a};
-};
-var elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
+var author$project$Main$Blue = 2;
+var author$project$Main$Green = 1;
+var author$project$Main$Red = 0;
+var author$project$Main$Fizzler = elm$core$Basics$identity;
+var author$project$Particle$Particle = elm$core$Basics$identity;
 var elm$core$Basics$EQ = 1;
 var elm$core$Basics$GT = 2;
 var elm$core$Basics$LT = 0;
@@ -4450,21 +4446,11 @@ var elm$core$Array$toList = function (array) {
 	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
 };
 var elm$core$Basics$fdiv = _Basics_fdiv;
-var elm$core$Basics$floor = _Basics_floor;
-var elm$core$Basics$gt = _Utils_gt;
-var elm$core$Basics$max = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) > 0) ? x : y;
-	});
+var author$project$Particle$positiveInfinity = 1 / 0;
 var elm$core$Basics$identity = function (x) {
 	return x;
 };
 var elm$random$Random$Generator = elm$core$Basics$identity;
-var elm$random$Random$constant = function (value) {
-	return function (seed) {
-		return _Utils_Tuple2(value, seed);
-	};
-};
 var elm$random$Random$map = F2(
 	function (func, _n0) {
 		var genA = _n0;
@@ -4477,24 +4463,341 @@ var elm$random$Random$map = F2(
 				seed1);
 		};
 	});
+var author$project$Particle$init = function (generator) {
+	return A2(
+		elm$random$Random$map,
+		function (a) {
+			return {
+				O: {aP: 0, aQ: 0},
+				D: a,
+				P: {as: 0, aw: 0, ax: 0},
+				E: author$project$Particle$positiveInfinity,
+				G: author$project$Particle$positiveInfinity,
+				H: {aP: 0, aQ: 0},
+				j: {t: 0, z: 0}
+			};
+		},
+		generator);
+};
+var elm$core$Basics$mul = _Basics_mul;
+var elm$core$Basics$pi = _Basics_pi;
+var elm$core$Basics$degrees = function (angleInDegrees) {
+	return (angleInDegrees * elm$core$Basics$pi) / 180;
+};
+var elm$core$Basics$sub = _Basics_sub;
+var elm$random$Random$map2 = F3(
+	function (func, _n0, _n1) {
+		var genA = _n0;
+		var genB = _n1;
+		return function (seed0) {
+			var _n2 = genA(seed0);
+			var a = _n2.a;
+			var seed1 = _n2.b;
+			var _n3 = genB(seed1);
+			var b = _n3.a;
+			var seed2 = _n3.b;
+			return _Utils_Tuple2(
+				A2(func, a, b),
+				seed2);
+		};
+	});
+var author$project$Particle$withDirection = elm$random$Random$map2(
+	F2(
+		function (direction_, _n0) {
+			var particle = _n0;
+			var velocity = particle.j;
+			return _Utils_update(
+				particle,
+				{
+					j: _Utils_update(
+						velocity,
+						{
+							t: direction_ - elm$core$Basics$degrees(90)
+						})
+				});
+		}));
+var author$project$Particle$withLifetime = elm$random$Random$map2(
+	F2(
+		function (lifetime, _n0) {
+			var particle = _n0;
+			return _Utils_update(
+				particle,
+				{E: lifetime, G: lifetime});
+		}));
+var author$project$Particle$withSpeed = elm$random$Random$map2(
+	F2(
+		function (speed_, _n0) {
+			var particle = _n0;
+			var velocity = particle.j;
+			return _Utils_update(
+				particle,
+				{
+					j: _Utils_update(
+						velocity,
+						{z: speed_})
+				});
+		}));
+var elm$core$Basics$apR = F2(
+	function (x, f) {
+		return f(x);
+	});
+var elm$core$Basics$gt = _Utils_gt;
 var elm$core$Basics$lt = _Utils_lt;
+var elm$core$Basics$clamp = F3(
+	function (low, high, number) {
+		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
+	});
+var elm$random$Random$constant = function (value) {
+	return function (seed) {
+		return _Utils_Tuple2(value, seed);
+	};
+};
 var elm$core$Basics$negate = function (n) {
 	return -n;
 };
 var elm$core$Basics$abs = function (n) {
 	return (n < 0) ? (-n) : n;
 };
-var elm$core$Basics$apL = F2(
-	function (f, x) {
-		return f(x);
-	});
-var elm$core$Basics$apR = F2(
-	function (x, f) {
-		return f(x);
-	});
-var elm$core$Basics$le = _Utils_le;
-var elm$core$Basics$sub = _Basics_sub;
 var elm$core$Basics$add = _Basics_add;
+var elm$core$Basics$toFloat = _Basics_toFloat;
+var elm$core$Bitwise$and = _Bitwise_and;
+var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var elm$random$Random$Seed = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var elm$random$Random$next = function (_n0) {
+	var state0 = _n0.a;
+	var incr = _n0.b;
+	return A2(elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
+};
+var elm$core$Bitwise$xor = _Bitwise_xor;
+var elm$random$Random$peel = function (_n0) {
+	var state = _n0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
+};
+var elm$random$Random$float = F2(
+	function (a, b) {
+		return function (seed0) {
+			var seed1 = elm$random$Random$next(seed0);
+			var range = elm$core$Basics$abs(b - a);
+			var n1 = elm$random$Random$peel(seed1);
+			var n0 = elm$random$Random$peel(seed0);
+			var lo = (134217727 & n1) * 1.0;
+			var hi = (67108863 & n0) * 1.0;
+			var val = ((hi * 1.34217728e8) + lo) / 9.007199254740992e15;
+			var scaled = (val * range) + a;
+			return _Utils_Tuple2(
+				scaled,
+				elm$random$Random$next(seed1));
+		};
+	});
+var elm$core$Basics$cos = _Basics_cos;
+var elm$core$Basics$e = _Basics_e;
+var elm$core$Basics$logBase = F2(
+	function (base, number) {
+		return _Basics_log(number) / _Basics_log(base);
+	});
+var elm$core$Basics$max = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) > 0) ? x : y;
+	});
+var elm$core$Basics$sqrt = _Basics_sqrt;
+var elm_community$random_extra$Random$Float$standardNormal = A3(
+	elm$random$Random$map2,
+	F2(
+		function (u, theta) {
+			return elm$core$Basics$sqrt(
+				(-2) * A2(
+					elm$core$Basics$logBase,
+					elm$core$Basics$e,
+					1 - A2(elm$core$Basics$max, 0, u))) * elm$core$Basics$cos(theta);
+		}),
+	A2(elm$random$Random$float, 0, 1),
+	A2(elm$random$Random$float, 0, 2 * elm$core$Basics$pi));
+var elm_community$random_extra$Random$Float$normal = F2(
+	function (mean, stdDev) {
+		return A2(
+			elm$random$Random$map,
+			function (u) {
+				return (u * stdDev) + mean;
+			},
+			elm_community$random_extra$Random$Float$standardNormal);
+	});
+var author$project$Main$fizzler = function (color) {
+	return A2(
+		author$project$Particle$withLifetime,
+		A2(elm_community$random_extra$Random$Float$normal, 3, 0.25),
+		A2(
+			author$project$Particle$withSpeed,
+			A2(
+				elm$random$Random$map,
+				A2(elm$core$Basics$clamp, 0, 200),
+				A2(elm_community$random_extra$Random$Float$normal, 100, 100)),
+			A2(
+				author$project$Particle$withDirection,
+				A2(
+					elm$random$Random$map,
+					elm$core$Basics$degrees,
+					A2(elm$random$Random$float, 0, 360)),
+				author$project$Particle$init(
+					elm$random$Random$constant(color)))));
+};
+var author$project$Particle$withDrag = function (drag) {
+	return elm$random$Random$map(
+		function (_n0) {
+			var particle = _n0;
+			return _Utils_update(
+				particle,
+				{
+					P: drag(particle.D)
+				});
+		});
+};
+var author$project$Particle$withGravity = function (pxPerSecond) {
+	return elm$random$Random$map(
+		function (_n0) {
+			var particle = _n0;
+			return _Utils_update(
+				particle,
+				{
+					O: {aP: 0, aQ: pxPerSecond}
+				});
+		});
+};
+var author$project$Particle$withLocation = elm$random$Random$map2(
+	F2(
+		function (position, _n0) {
+			var particle = _n0;
+			return _Utils_update(
+				particle,
+				{H: position});
+		}));
+var elm$random$Random$listHelp = F4(
+	function (revList, n, gen, seed) {
+		listHelp:
+		while (true) {
+			if (n < 1) {
+				return _Utils_Tuple2(revList, seed);
+			} else {
+				var _n0 = gen(seed);
+				var value = _n0.a;
+				var newSeed = _n0.b;
+				var $temp$revList = A2(elm$core$List$cons, value, revList),
+					$temp$n = n - 1,
+					$temp$gen = gen,
+					$temp$seed = newSeed;
+				revList = $temp$revList;
+				n = $temp$n;
+				gen = $temp$gen;
+				seed = $temp$seed;
+				continue listHelp;
+			}
+		}
+	});
+var elm$random$Random$list = F2(
+	function (n, _n0) {
+		var gen = _n0;
+		return function (seed) {
+			return A4(elm$random$Random$listHelp, _List_Nil, n, gen, seed);
+		};
+	});
+var author$project$Main$fireworkAt = F3(
+	function (color, x, y) {
+		return A2(
+			elm$random$Random$list,
+			150,
+			A2(
+				author$project$Particle$withDrag,
+				function (_n0) {
+					return {as: 3, aw: 1, ax: 1.5e-2};
+				},
+				A2(
+					author$project$Particle$withGravity,
+					50,
+					A2(
+						author$project$Particle$withLocation,
+						elm$random$Random$constant(
+							{aP: x, aQ: y}),
+						author$project$Main$fizzler(color)))));
+	});
+var author$project$Particle$System$System = elm$core$Basics$identity;
+var elm$core$Basics$append = _Utils_append;
+var elm$random$Random$step = F2(
+	function (_n0, seed) {
+		var generator = _n0;
+		return generator(seed);
+	});
+var author$project$Particle$System$burst = F2(
+	function (generator, _n0) {
+		var system = _n0;
+		var _n1 = A2(elm$random$Random$step, generator, system.I);
+		var particles = _n1.a;
+		var nextSeed = _n1.b;
+		return _Utils_update(
+			system,
+			{
+				r: _Utils_ap(particles, system.r),
+				I: nextSeed
+			});
+	});
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var elm$core$Basics$sin = _Basics_sin;
+var elm$core$Basics$fromPolar = function (_n0) {
+	var radius = _n0.a;
+	var theta = _n0.b;
+	return _Utils_Tuple2(
+		radius * elm$core$Basics$cos(theta),
+		radius * elm$core$Basics$sin(theta));
+};
+var elm$core$Basics$atan2 = _Basics_atan2;
+var elm$core$Basics$toPolar = function (_n0) {
+	var x = _n0.a;
+	var y = _n0.b;
+	return _Utils_Tuple2(
+		elm$core$Basics$sqrt((x * x) + (y * y)),
+		A2(elm$core$Basics$atan2, y, x));
+};
+var elm$core$Maybe$Just = function (a) {
+	return {$: 0, a: a};
+};
+var elm$core$Maybe$Nothing = {$: 1};
+var author$project$Particle$update = F2(
+	function (deltaMs, _n0) {
+		var particle = _n0;
+		var position = particle.H;
+		var velocity = particle.j;
+		var acceleration = particle.O;
+		var drag = particle.P;
+		var lifetime = particle.E;
+		var deltaSeconds = deltaMs / 1000;
+		var _n1 = elm$core$Basics$fromPolar(
+			_Utils_Tuple2(velocity.z, velocity.t));
+		var velocityX = _n1.a;
+		var velocityY = _n1.b;
+		var newPosition = {aP: (position.aP + (velocityX * deltaSeconds)) + (((acceleration.aP * deltaSeconds) * deltaSeconds) / 2), aQ: (position.aQ + (velocityY * deltaSeconds)) + (((acceleration.aQ * deltaSeconds) * deltaSeconds) / 2)};
+		return (lifetime < 0) ? elm$core$Maybe$Nothing : A2(elm$core$Basics$composeL, elm$core$Maybe$Just, elm$core$Basics$identity)(
+			{
+				O: acceleration,
+				D: particle.D,
+				P: drag,
+				E: lifetime - deltaSeconds,
+				G: particle.G,
+				H: newPosition,
+				j: function () {
+					var _n2 = elm$core$Basics$toPolar(
+						_Utils_Tuple2(velocityX + (acceleration.aP * deltaSeconds), velocityY + (acceleration.aQ * deltaSeconds)));
+					var speed_ = _n2.a;
+					var direction_ = _n2.b;
+					return {t: direction_, z: speed_ - ((((((drag.aw * drag.as) * 0.5) * drag.ax) * speed_) * speed_) * deltaSeconds)};
+				}()
+			});
+	});
 var elm$core$List$foldl = F3(
 	function (func, acc, list) {
 		foldl:
@@ -4572,336 +4875,6 @@ var elm$core$List$foldr = F3(
 	function (fn, acc, ls) {
 		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
 	});
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
-var elm$core$List$sum = function (numbers) {
-	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
-};
-var elm$core$Tuple$first = function (_n0) {
-	var x = _n0.a;
-	return x;
-};
-var elm$core$Tuple$second = function (_n0) {
-	var y = _n0.b;
-	return y;
-};
-var elm$random$Random$andThen = F2(
-	function (callback, _n0) {
-		var genA = _n0;
-		return function (seed) {
-			var _n1 = genA(seed);
-			var result = _n1.a;
-			var newSeed = _n1.b;
-			var _n2 = callback(result);
-			var genB = _n2;
-			return genB(newSeed);
-		};
-	});
-var elm$core$Basics$mul = _Basics_mul;
-var elm$core$Basics$toFloat = _Basics_toFloat;
-var elm$core$Bitwise$and = _Bitwise_and;
-var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var elm$random$Random$Seed = F2(
-	function (a, b) {
-		return {$: 0, a: a, b: b};
-	});
-var elm$random$Random$next = function (_n0) {
-	var state0 = _n0.a;
-	var incr = _n0.b;
-	return A2(elm$random$Random$Seed, ((state0 * 1664525) + incr) >>> 0, incr);
-};
-var elm$core$Bitwise$xor = _Bitwise_xor;
-var elm$random$Random$peel = function (_n0) {
-	var state = _n0.a;
-	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
-	return ((word >>> 22) ^ word) >>> 0;
-};
-var elm$random$Random$float = F2(
-	function (a, b) {
-		return function (seed0) {
-			var seed1 = elm$random$Random$next(seed0);
-			var range = elm$core$Basics$abs(b - a);
-			var n1 = elm$random$Random$peel(seed1);
-			var n0 = elm$random$Random$peel(seed0);
-			var lo = (134217727 & n1) * 1.0;
-			var hi = (67108863 & n0) * 1.0;
-			var val = ((hi * 1.34217728e8) + lo) / 9.007199254740992e15;
-			var scaled = (val * range) + a;
-			return _Utils_Tuple2(
-				scaled,
-				elm$random$Random$next(seed1));
-		};
-	});
-var elm_community$random_extra$Random$Extra$frequency = F2(
-	function (head, pairs) {
-		var total = elm$core$List$sum(
-			A2(
-				elm$core$List$map,
-				A2(elm$core$Basics$composeL, elm$core$Basics$abs, elm$core$Tuple$first),
-				A2(elm$core$List$cons, head, pairs)));
-		var pick = F2(
-			function (someChoices, n) {
-				pick:
-				while (true) {
-					if (someChoices.b) {
-						var _n1 = someChoices.a;
-						var k = _n1.a;
-						var g = _n1.b;
-						var rest = someChoices.b;
-						if (_Utils_cmp(n, k) < 1) {
-							return g;
-						} else {
-							var $temp$someChoices = rest,
-								$temp$n = n - k;
-							someChoices = $temp$someChoices;
-							n = $temp$n;
-							continue pick;
-						}
-					} else {
-						return head.b;
-					}
-				}
-			});
-		return A2(
-			elm$random$Random$andThen,
-			pick(
-				A2(elm$core$List$cons, head, pairs)),
-			A2(elm$random$Random$float, 0, total));
-	});
-var elm$core$Basics$cos = _Basics_cos;
-var elm$core$Basics$e = _Basics_e;
-var elm$core$Basics$logBase = F2(
-	function (base, number) {
-		return _Basics_log(number) / _Basics_log(base);
-	});
-var elm$core$Basics$pi = _Basics_pi;
-var elm$core$Basics$sqrt = _Basics_sqrt;
-var elm$random$Random$map2 = F3(
-	function (func, _n0, _n1) {
-		var genA = _n0;
-		var genB = _n1;
-		return function (seed0) {
-			var _n2 = genA(seed0);
-			var a = _n2.a;
-			var seed1 = _n2.b;
-			var _n3 = genB(seed1);
-			var b = _n3.a;
-			var seed2 = _n3.b;
-			return _Utils_Tuple2(
-				A2(func, a, b),
-				seed2);
-		};
-	});
-var elm_community$random_extra$Random$Float$standardNormal = A3(
-	elm$random$Random$map2,
-	F2(
-		function (u, theta) {
-			return elm$core$Basics$sqrt(
-				(-2) * A2(
-					elm$core$Basics$logBase,
-					elm$core$Basics$e,
-					1 - A2(elm$core$Basics$max, 0, u))) * elm$core$Basics$cos(theta);
-		}),
-	A2(elm$random$Random$float, 0, 1),
-	A2(elm$random$Random$float, 0, 2 * elm$core$Basics$pi));
-var elm_community$random_extra$Random$Float$normal = F2(
-	function (mean, stdDev) {
-		return A2(
-			elm$random$Random$map,
-			function (u) {
-				return (u * stdDev) + mean;
-			},
-			elm_community$random_extra$Random$Float$standardNormal);
-	});
-var author$project$Main$firework = A2(
-	elm_community$random_extra$Random$Extra$frequency,
-	_Utils_Tuple2(
-		1 / 8,
-		A2(
-			elm$random$Random$map,
-			A2(
-				elm$core$Basics$composeL,
-				A2(
-					elm$core$Basics$composeL,
-					author$project$Main$Line,
-					elm$core$Basics$max(3)),
-				elm$core$Basics$floor),
-			A2(elm_community$random_extra$Random$Float$normal, 15, 6))),
-	_List_fromArray(
-		[
-			_Utils_Tuple2(
-			7 / 8,
-			elm$random$Random$constant(author$project$Main$Dot))
-		]));
-var author$project$Particle$Particle = elm$core$Basics$identity;
-var author$project$Particle$positiveInfinity = 1 / 0;
-var author$project$Particle$init = function (generator) {
-	return A2(
-		elm$random$Random$map,
-		function (a) {
-			return {
-				O: {aP: 0, aQ: 0},
-				C: a,
-				P: {as: 0, aw: 0, ax: 0},
-				D: author$project$Particle$positiveInfinity,
-				F: author$project$Particle$positiveInfinity,
-				G: {aP: 0, aQ: 0},
-				n: {t: 0, J: 0}
-			};
-		},
-		generator);
-};
-var elm$core$Basics$degrees = function (angleInDegrees) {
-	return (angleInDegrees * elm$core$Basics$pi) / 180;
-};
-var author$project$Particle$withDirection = elm$random$Random$map2(
-	F2(
-		function (direction_, _n0) {
-			var particle = _n0;
-			var velocity = particle.n;
-			return _Utils_update(
-				particle,
-				{
-					n: _Utils_update(
-						velocity,
-						{
-							t: direction_ - elm$core$Basics$degrees(90)
-						})
-				});
-		}));
-var author$project$Particle$withDrag = function (drag) {
-	return elm$random$Random$map(
-		function (_n0) {
-			var particle = _n0;
-			return _Utils_update(
-				particle,
-				{
-					P: drag(particle.C)
-				});
-		});
-};
-var author$project$Particle$withGravity = function (pxPerSecond) {
-	return elm$random$Random$map(
-		function (_n0) {
-			var particle = _n0;
-			return _Utils_update(
-				particle,
-				{
-					O: {aP: 0, aQ: pxPerSecond}
-				});
-		});
-};
-var author$project$Particle$withLifetime = elm$random$Random$map2(
-	F2(
-		function (lifetime, _n0) {
-			var particle = _n0;
-			return _Utils_update(
-				particle,
-				{D: lifetime, F: lifetime});
-		}));
-var author$project$Particle$withLocation = elm$random$Random$map2(
-	F2(
-		function (position, _n0) {
-			var particle = _n0;
-			return _Utils_update(
-				particle,
-				{G: position});
-		}));
-var author$project$Particle$withSpeed = elm$random$Random$map2(
-	F2(
-		function (speed, _n0) {
-			var particle = _n0;
-			var velocity = particle.n;
-			return _Utils_update(
-				particle,
-				{
-					n: _Utils_update(
-						velocity,
-						{J: speed})
-				});
-		}));
-var author$project$Particle$System$System = elm$core$Basics$identity;
-var elm$core$Basics$append = _Utils_append;
-var elm$random$Random$step = F2(
-	function (_n0, seed) {
-		var generator = _n0;
-		return generator(seed);
-	});
-var author$project$Particle$System$burst = F2(
-	function (generator, _n0) {
-		var system = _n0;
-		var _n1 = A2(elm$random$Random$step, generator, system.H);
-		var particles = _n1.a;
-		var nextSeed = _n1.b;
-		return _Utils_update(
-			system,
-			{
-				r: _Utils_ap(particles, system.r),
-				H: nextSeed
-			});
-	});
-var elm$core$Basics$sin = _Basics_sin;
-var elm$core$Basics$fromPolar = function (_n0) {
-	var radius = _n0.a;
-	var theta = _n0.b;
-	return _Utils_Tuple2(
-		radius * elm$core$Basics$cos(theta),
-		radius * elm$core$Basics$sin(theta));
-};
-var elm$core$Basics$atan2 = _Basics_atan2;
-var elm$core$Basics$toPolar = function (_n0) {
-	var x = _n0.a;
-	var y = _n0.b;
-	return _Utils_Tuple2(
-		elm$core$Basics$sqrt((x * x) + (y * y)),
-		A2(elm$core$Basics$atan2, y, x));
-};
-var elm$core$Maybe$Just = function (a) {
-	return {$: 0, a: a};
-};
-var elm$core$Maybe$Nothing = {$: 1};
-var author$project$Particle$update = F2(
-	function (deltaMs, _n0) {
-		var particle = _n0;
-		var position = particle.G;
-		var velocity = particle.n;
-		var acceleration = particle.O;
-		var drag = particle.P;
-		var lifetime = particle.D;
-		var deltaSeconds = deltaMs / 1000;
-		var _n1 = elm$core$Basics$fromPolar(
-			_Utils_Tuple2(velocity.J, velocity.t));
-		var velocityX = _n1.a;
-		var velocityY = _n1.b;
-		return (lifetime < 0) ? elm$core$Maybe$Nothing : A2(elm$core$Basics$composeL, elm$core$Maybe$Just, elm$core$Basics$identity)(
-			{
-				O: acceleration,
-				C: particle.C,
-				P: drag,
-				D: lifetime - deltaSeconds,
-				F: particle.F,
-				G: {aP: (position.aP + (velocityX * deltaSeconds)) + (((acceleration.aP * deltaSeconds) * deltaSeconds) / 2), aQ: (position.aQ + (velocityY * deltaSeconds)) + (((acceleration.aQ * deltaSeconds) * deltaSeconds) / 2)},
-				n: function () {
-					var _n2 = elm$core$Basics$toPolar(
-						_Utils_Tuple2(velocityX + (acceleration.aP * deltaSeconds), velocityY + (acceleration.aQ * deltaSeconds)));
-					var speed = _n2.a;
-					var direction_ = _n2.b;
-					return {t: direction_, J: speed - ((((((drag.aw * drag.as) * 0.5) * drag.ax) * speed) * speed) * deltaSeconds)};
-				}()
-			});
-	});
 var elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
 		var _n0 = f(mx);
@@ -4931,7 +4904,7 @@ var author$project$Particle$System$update = F2(
 				elm$core$List$filterMap,
 				author$project$Particle$update(delta),
 				_Utils_ap(particles, system.r)),
-			H: seed
+			I: seed
 		};
 	});
 var elm$core$Basics$False = 1;
@@ -4983,6 +4956,10 @@ var elm$core$Array$compressNodes = F2(
 		}
 	});
 var elm$core$Basics$eq = _Utils_equal;
+var elm$core$Tuple$first = function (_n0) {
+	var x = _n0.a;
+	return x;
+};
 var elm$core$Array$treeFromBuilder = F2(
 	function (nodeList, nodeListSize) {
 		treeFromBuilder:
@@ -4999,6 +4976,11 @@ var elm$core$Array$treeFromBuilder = F2(
 			}
 		}
 	});
+var elm$core$Basics$apL = F2(
+	function (f, x) {
+		return f(x);
+	});
+var elm$core$Basics$floor = _Basics_floor;
 var elm$core$Elm$JsArray$length = _JsArray_length;
 var elm$core$Array$builderToArray = F2(
 	function (reverseNodeList, builder) {
@@ -5051,6 +5033,7 @@ var elm$core$Array$initializeHelp = F5(
 			}
 		}
 	});
+var elm$core$Basics$le = _Utils_le;
 var elm$core$Basics$remainderBy = _Basics_remainderBy;
 var elm$core$Array$initialize = F2(
 	function (len, fn) {
@@ -5275,34 +5258,103 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 	});
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
-var elm$random$Random$listHelp = F4(
-	function (revList, n, gen, seed) {
-		listHelp:
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var elm$random$Random$addOne = function (value) {
+	return _Utils_Tuple2(1, value);
+};
+var elm$core$List$sum = function (numbers) {
+	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
+};
+var elm$random$Random$getByWeight = F3(
+	function (_n0, others, countdown) {
+		getByWeight:
 		while (true) {
-			if (n < 1) {
-				return _Utils_Tuple2(revList, seed);
+			var weight = _n0.a;
+			var value = _n0.b;
+			if (!others.b) {
+				return value;
 			} else {
-				var _n0 = gen(seed);
-				var value = _n0.a;
-				var newSeed = _n0.b;
-				var $temp$revList = A2(elm$core$List$cons, value, revList),
-					$temp$n = n - 1,
-					$temp$gen = gen,
-					$temp$seed = newSeed;
-				revList = $temp$revList;
-				n = $temp$n;
-				gen = $temp$gen;
-				seed = $temp$seed;
-				continue listHelp;
+				var second = others.a;
+				var otherOthers = others.b;
+				if (_Utils_cmp(
+					countdown,
+					elm$core$Basics$abs(weight)) < 1) {
+					return value;
+				} else {
+					var $temp$_n0 = second,
+						$temp$others = otherOthers,
+						$temp$countdown = countdown - elm$core$Basics$abs(weight);
+					_n0 = $temp$_n0;
+					others = $temp$others;
+					countdown = $temp$countdown;
+					continue getByWeight;
+				}
 			}
 		}
 	});
-var elm$random$Random$list = F2(
-	function (n, _n0) {
-		var gen = _n0;
-		return function (seed) {
-			return A4(elm$random$Random$listHelp, _List_Nil, n, gen, seed);
+var elm$random$Random$weighted = F2(
+	function (first, others) {
+		var normalize = function (_n0) {
+			var weight = _n0.a;
+			return elm$core$Basics$abs(weight);
 		};
+		var total = normalize(first) + elm$core$List$sum(
+			A2(elm$core$List$map, normalize, others));
+		return A2(
+			elm$random$Random$map,
+			A2(elm$random$Random$getByWeight, first, others),
+			A2(elm$random$Random$float, 0, total));
+	});
+var elm$random$Random$uniform = F2(
+	function (value, valueList) {
+		return A2(
+			elm$random$Random$weighted,
+			elm$random$Random$addOne(value),
+			A2(elm$core$List$map, elm$random$Random$addOne, valueList));
+	});
+var elm$random$Random$andThen = F2(
+	function (callback, _n0) {
+		var genA = _n0;
+		return function (seed) {
+			var _n1 = genA(seed);
+			var result = _n1.a;
+			var newSeed = _n1.b;
+			var _n2 = callback(result);
+			var genB = _n2;
+			return genB(newSeed);
+		};
+	});
+var elm_community$random_extra$Random$Extra$andThen3 = F4(
+	function (constructor, generatorA, generatorB, generatorC) {
+		return A2(
+			elm$random$Random$andThen,
+			function (a) {
+				return A2(
+					elm$random$Random$andThen,
+					function (b) {
+						return A2(
+							elm$random$Random$andThen,
+							function (c) {
+								return A3(constructor, a, b, c);
+							},
+							generatorC);
+					},
+					generatorB);
+			},
+			generatorA);
 	});
 var author$project$Main$update = F2(
 	function (msg, model) {
@@ -5315,51 +5367,56 @@ var author$project$Main$update = F2(
 			return _Utils_Tuple2(
 				A2(
 					author$project$Particle$System$burst,
-					A2(
-						elm$random$Random$list,
-						100,
+					A4(
+						elm_community$random_extra$Random$Extra$andThen3,
+						author$project$Main$fireworkAt,
 						A2(
-							author$project$Particle$withDrag,
-							function (_n1) {
-								return {as: 3, aw: 1, ax: 1.226e-3};
-							},
-							A2(
-								author$project$Particle$withGravity,
-								100,
-								A2(
-									author$project$Particle$withLifetime,
-									elm$random$Random$constant(1),
-									A2(
-										author$project$Particle$withSpeed,
-										A2(elm_community$random_extra$Random$Float$normal, 500, 100),
-										A2(
-											author$project$Particle$withDirection,
-											A2(
-												elm_community$random_extra$Random$Float$normal,
-												0,
-												elm$core$Basics$degrees(15)),
-											A2(
-												author$project$Particle$withLocation,
-												elm$random$Random$constant(
-													{aP: 150, aQ: 300}),
-												author$project$Particle$init(author$project$Main$firework)))))))),
+							elm$random$Random$uniform,
+							0,
+							_List_fromArray(
+								[1, 2])),
+						A2(elm_community$random_extra$Random$Float$normal, 300, 100),
+						A2(elm_community$random_extra$Random$Float$normal, 300, 100)),
 					model),
 				elm$core$Platform$Cmd$none);
 		}
 	});
 var author$project$Main$Detonate = {$: 1};
+var elm$core$String$fromFloat = _String_fromNumber;
+var author$project$Main$hslString = F3(
+	function (hue, saturation, luminance) {
+		return 'hsl(' + (elm$core$String$fromFloat(hue) + (',' + (elm$core$String$fromFloat(saturation) + ('%,' + (elm$core$String$fromFloat(luminance) + '%)')))));
+	});
+var author$project$Main$toHsl = function (color) {
+	switch (color) {
+		case 0:
+			return _Utils_Tuple3(0, 86, 75);
+		case 1:
+			return _Utils_Tuple3(90, 75, 75);
+		default:
+			return _Utils_Tuple3(211, 49, 83);
+	}
+};
 var author$project$Particle$data = function (_n0) {
 	var particle = _n0;
-	return particle.C;
+	return particle.D;
 };
 var author$project$Particle$direction = function (_n0) {
-	var velocity = _n0.n;
+	var velocity = _n0.j;
 	return velocity.t;
 };
 var author$project$Particle$directionDegrees = function (particle) {
 	return (author$project$Particle$direction(particle) * 180) / elm$core$Basics$pi;
 };
-var elm$core$String$fromFloat = _String_fromNumber;
+var author$project$Particle$lifetimePercent = function (_n0) {
+	var lifetime = _n0.E;
+	var originalLifetime = _n0.G;
+	return A3(elm$core$Basics$clamp, 0, 1, lifetime / originalLifetime);
+};
+var author$project$Particle$speed = function (_n0) {
+	var velocity = _n0.j;
+	return velocity.z;
+};
 var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$map2 = _Json_map2;
 var elm$json$Json$Decode$succeed = _Json_succeed;
@@ -5376,45 +5433,53 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	}
 };
 var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var elm$svg$Svg$circle = elm$svg$Svg$trustedNode('circle');
-var elm$svg$Svg$rect = elm$svg$Svg$trustedNode('rect');
+var elm$svg$Svg$ellipse = elm$svg$Svg$trustedNode('ellipse');
+var elm$svg$Svg$Attributes$cx = _VirtualDom_attribute('cx');
+var elm$svg$Svg$Attributes$cy = _VirtualDom_attribute('cy');
 var elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var elm$svg$Svg$Attributes$r = _VirtualDom_attribute('r');
+var elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
+var elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
+var elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
 var elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
-var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var author$project$Main$fireworkView = function (particle) {
 	var _n0 = author$project$Particle$data(particle);
-	if (!_n0.$) {
-		return A2(
-			elm$svg$Svg$circle,
-			_List_fromArray(
-				[
-					elm$svg$Svg$Attributes$r('1'),
-					elm$svg$Svg$Attributes$fill('#FFF176')
-				]),
-			_List_Nil);
-	} else {
-		var length = _n0.a;
-		return A2(
-			elm$svg$Svg$rect,
-			_List_fromArray(
-				[
-					elm$svg$Svg$Attributes$height('2'),
-					elm$svg$Svg$Attributes$width(
-					elm$core$String$fromInt(length)),
-					elm$svg$Svg$Attributes$fill('#FFF176'),
-					elm$svg$Svg$Attributes$transform(
-					'rotate(' + (elm$core$String$fromFloat(
-						author$project$Particle$directionDegrees(particle)) + ')'))
-				]),
-			_List_Nil);
-	}
+	var color = _n0;
+	var maxLuminance = 100;
+	var lifetime = author$project$Particle$lifetimePercent(particle);
+	var opacity = (lifetime < 0.1) ? (lifetime * 10) : 1;
+	var length = A2(
+		elm$core$Basics$max,
+		2,
+		author$project$Particle$speed(particle) / 15);
+	var _n1 = author$project$Main$toHsl(color);
+	var hue = _n1.a;
+	var saturation = _n1.b;
+	var luminance = _n1.c;
+	var luminanceDelta = maxLuminance - luminance;
+	return A2(
+		elm$svg$Svg$ellipse,
+		_List_fromArray(
+			[
+				elm$svg$Svg$Attributes$cx(
+				elm$core$String$fromFloat(length / 2)),
+				elm$svg$Svg$Attributes$cy('0'),
+				elm$svg$Svg$Attributes$rx(
+				elm$core$String$fromFloat(length)),
+				elm$svg$Svg$Attributes$ry('2'),
+				elm$svg$Svg$Attributes$transform(
+				'rotate(' + (elm$core$String$fromFloat(
+					author$project$Particle$directionDegrees(particle)) + ')')),
+				elm$svg$Svg$Attributes$opacity(
+				elm$core$String$fromFloat(opacity)),
+				elm$svg$Svg$Attributes$fill(
+				A3(author$project$Main$hslString, hue, saturation, maxLuminance - (luminanceDelta * (1 - lifetime))))
+			]),
+		_List_Nil);
 };
 var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
 var author$project$Particle$view = F2(
 	function (viewData, particle) {
-		var position = particle.G;
+		var position = particle.H;
 		return A2(
 			elm$svg$Svg$g,
 			_List_fromArray(
@@ -5484,15 +5549,15 @@ var author$project$Main$view = function (model) {
 				author$project$Main$fireworkView,
 				_List_fromArray(
 					[
-						A2(elm$html$Html$Attributes$style, 'width', '300px'),
-						A2(elm$html$Html$Attributes$style, 'height', '300px'),
-						A2(elm$html$Html$Attributes$style, 'background-color', '#000000')
+						A2(elm$html$Html$Attributes$style, 'width', '600px'),
+						A2(elm$html$Html$Attributes$style, 'height', '600px'),
+						A2(elm$html$Html$Attributes$style, 'background-color', '#0F0F0F')
 					]),
 				model)
 			]));
 };
 var author$project$Particle$System$init = function (seed) {
-	return {r: _List_Nil, H: seed};
+	return {r: _List_Nil, I: seed};
 };
 var author$project$Particle$System$NewFrame = F3(
 	function (a, b, c) {
@@ -5508,7 +5573,7 @@ var elm$core$Tuple$mapFirst = F2(
 	});
 var author$project$Particle$System$emitterParticles = F3(
 	function (delta, emitters, _n0) {
-		var seed = _n0.H;
+		var seed = _n0.I;
 		return A3(
 			elm$core$List$foldl,
 			F2(

@@ -6,8 +6,6 @@ module Main exposing (main)
 We're going to make a firework, specifically one that looks like this stock
 video: <https://videos.pexels.com/videos/fireworks-display-854341>
 
-[ms]: https://mutant.tech/
-
 -}
 
 import Browser exposing (Document)

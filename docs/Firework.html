@@ -58,7 +58,7 @@ fizzler color =
     Particle.init (Random.constant (Fizzler color))
         |> Particle.withDirection (Random.map degrees (Random.float 0 360))
         |> Particle.withSpeed (Random.map (clamp 0 200) (normal 100 100))
-        |> Particle.withLifetime (normal 3 0.25)
+        |> Particle.withLifetime (normal 1.25 0.1)
 
 
 fireworkAt : Color -> Float -> Float -> Generator (List (Particle Firework))
@@ -70,7 +70,7 @@ fireworkAt color x y =
             (\_ ->
                 { coefficient = 1
                 , density = 0.015
-                , area = 3
+                , area = 2
                 }
             )
         |> Random.list 150

@@ -4628,7 +4628,7 @@ var elm_community$random_extra$Random$Float$normal = F2(
 var author$project$Main$fizzler = function (color) {
 	return A2(
 		author$project$Particle$withLifetime,
-		A2(elm_community$random_extra$Random$Float$normal, 3, 0.25),
+		A2(elm_community$random_extra$Random$Float$normal, 1.25, 0.1),
 		A2(
 			author$project$Particle$withSpeed,
 			A2(
@@ -4711,7 +4711,7 @@ var author$project$Main$fireworkAt = F3(
 			A2(
 				author$project$Particle$withDrag,
 				function (_n0) {
-					return {as: 3, aw: 1, ax: 1.5e-2};
+					return {as: 2, aw: 1, ax: 1.5e-2};
 				},
 				A2(
 					author$project$Particle$withGravity,

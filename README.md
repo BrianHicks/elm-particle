@@ -23,6 +23,9 @@ You can see fully worked examples online:
 
 The source for these examples all live in the `examples` directory on GitHub.
 
+If you'd like to see how this is done step-by-step, I gave a [20-minute presentation at Olso Elm Day 2019](https://www.youtube.com/watch?v=goL7LeDHFi4).
+There's also [an Elm town episode on the background behind elm-particle](https://elmtown.simplecast.fm/confetti-and-waterfalls).
+
 ## License
 
 `elm-particle` is licensed under the BSD 3-Clause license, located at `LICENSE`.

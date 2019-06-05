@@ -1,6 +1,6 @@
 module Particle exposing
     ( Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag
-    , view, data, lifetimePercent, direction, directionDegrees, speed
+    , view, viewHtml, data, lifetimePercent, direction, directionDegrees, speed
     , update
     )
 
@@ -77,7 +77,7 @@ folder of the source on GitHub. Go check those out!
 
 # Rendering Particles
 
-@docs view, data, lifetimePercent, direction, directionDegrees, speed
+@docs view, viewHtml, data, lifetimePercent, direction, directionDegrees, speed
 
 
 # Simulation
@@ -86,6 +86,8 @@ folder of the source on GitHub. Go check those out!
 
 -}
 
+import Html exposing (Html)
+import Html.Attributes
 import Random exposing (Generator)
 import Svg exposing (Svg)
 import Svg.Attributes as Attrs
@@ -366,6 +368,18 @@ view : (Particle a -> Svg msg) -> Particle a -> Svg msg
 view viewData ((Particle { position }) as particle) =
     Svg.g
         [ Attrs.transform ("translate(" ++ String.fromFloat position.x ++ "," ++ String.fromFloat position.y ++ ")") ]
+        [ viewData particle ]
+
+
+{-| Do the same thing as [`view`](#view) but render HTML instead of SVG.
+-}
+viewHtml : (Particle a -> Html msg) -> Particle a -> Html msg
+viewHtml viewData ((Particle { position }) as particle) =
+    Html.div
+        [ Html.Attributes.style "position" "absolute"
+        , Html.Attributes.style "left" (String.fromFloat position.x ++ "px")
+        , Html.Attributes.style "top" (String.fromFloat position.y ++ "px")
+        ]
         [ viewData particle ]
 
 

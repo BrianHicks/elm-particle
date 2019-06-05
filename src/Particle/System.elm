@@ -1,7 +1,7 @@
 module Particle.System exposing
     ( System, init
     , burst
-    , Msg, update, view, sub
+    , Msg, update, view, viewHtml, sub
     )
 
 {-|
@@ -19,7 +19,7 @@ module Particle.System exposing
 
 # Simulate Particles
 
-@docs Msg, update, view, sub
+@docs Msg, update, view, viewHtml, sub
 
 -}
 
@@ -118,6 +118,13 @@ this:
 view : (Particle a -> Svg msg) -> List (Html.Attribute msg) -> System a -> Html msg
 view viewParticle attrs (System { particles }) =
     Svg.svg attrs (List.map (Particle.view viewParticle) particles)
+
+
+{-| Do the same thing as [`view`](#view) but render HTML instead of SVG.
+-}
+viewHtml : (Particle a -> Html msg) -> List (Html.Attribute msg) -> System a -> Html msg
+viewHtml viewParticle attrs (System { particles }) =
+    Html.div attrs (List.map (Particle.viewHtml viewParticle) particles)
 
 
 {-| Subscribe to the right events in the browser. In this case, that's

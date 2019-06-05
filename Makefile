@@ -2,7 +2,7 @@
 # them. Why? I dunno. But this fixes it. Thanks, The Internet™!
 .SECONDARY:
 
-docs: docs/tada.png docs/Firework.html docs/Confetti.html docs/Water.html
+docs: docs/tada.png docs/Firework.html docs/Confetti.html docs/Water.html docs/WaterHtml.html
 	touch -m $@
 
 documentation.json: $(shell find src -name '*.elm')

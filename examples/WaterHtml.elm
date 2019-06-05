@@ -7,6 +7,11 @@ Generate some water coming from a hose or another source. This example
 mostly demonstrates emitters, and does just enough generation to get something
 nice looking.
 
+This demo uses `viewHtml` instead of `view` to render the particles. This lets
+you render your particles as HTML instead of SVG. You don't get as nice of a
+drawing API, but if you need to use some HTML/CSS element then this is the way
+to go.
+
 -}
 
 import Browser

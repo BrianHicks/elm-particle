@@ -1,5 +1,11 @@
 # Changelog
 
+## 2019-06-04: 1.2.0
+
+In our first foray into using particles at NoRedInk, we needed to render some `Html msg` as our particles, so now you can do that with `Particle.System.viewHtml` and `Particle.viewHtml`.
+
+Please open an issue detailing your use case if you end up needing to use these. The `view` bits are currently the weakest part of the whole library, so the more information we can get about how people are embedding particles into their apps the better we can make it!
+
 ## 2019-01-08: 1.0.2
 
 [Fixed](https://github.com/BrianHicks/elm-particle/pull/2) [bug #1](https://github.com/BrianHicks/elm-particle/issues/1) where drag was applied unevenly to particles since it was calculated for the x and y axes independently.

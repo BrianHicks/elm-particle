@@ -2669,7 +2669,7 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		l: func(record.l),
+		m: func(record.m),
 		U: record.U,
 		S: record.S
 	}
@@ -2939,7 +2939,7 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.l;
+		var message = !tag ? value : tag < 3 ? value.a : value.m;
 		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.U;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
@@ -4239,7 +4239,7 @@ function _Browser_getViewport()
 			aR: _Browser_window.pageXOffset,
 			aS: _Browser_window.pageYOffset,
 			C: _Browser_doc.documentElement.clientWidth,
-			v: _Browser_doc.documentElement.clientHeight
+			w: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4250,7 +4250,7 @@ function _Browser_getScene()
 	var elem = _Browser_doc.documentElement;
 	return {
 		C: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		v: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		w: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4275,13 +4275,13 @@ function _Browser_getViewportOf(id)
 		return {
 			as: {
 				C: node.scrollWidth,
-				v: node.scrollHeight
+				w: node.scrollHeight
 			},
 			av: {
 				aR: node.scrollLeft,
 				aS: node.scrollTop,
 				C: node.clientWidth,
-				v: node.clientHeight
+				w: node.clientHeight
 			}
 		};
 	});
@@ -4316,13 +4316,13 @@ function _Browser_getElement(id)
 				aR: x,
 				aS: y,
 				C: _Browser_doc.documentElement.clientWidth,
-				v: _Browser_doc.documentElement.clientHeight
+				w: _Browser_doc.documentElement.clientHeight
 			},
 			aA: {
 				aR: x + rect.left,
 				aS: y + rect.top,
 				C: rect.width,
-				v: rect.height
+				w: rect.height
 			}
 		};
 	});
@@ -4877,7 +4877,7 @@ var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
 var elm$svg$Svg$Attributes$transform = _VirtualDom_attribute('transform');
 var author$project$Particle$view = F2(
 	function (viewData, particle) {
-		var position = particle.x;
+		var position = particle.o;
 		return A2(
 			elm$svg$Svg$g,
 			_List_fromArray(
@@ -4962,7 +4962,7 @@ var elm$core$List$map = F2(
 var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
 var author$project$Particle$System$view = F3(
 	function (viewParticle, attrs, _n0) {
-		var particles = _n0.n;
+		var particles = _n0.i;
 		return A2(
 			elm$svg$Svg$svg,
 			attrs,
@@ -5162,8 +5162,8 @@ var author$project$Particle$init = function (generator) {
 				P: {W: 0, Y: 0, aa: 0},
 				F: author$project$Particle$positiveInfinity,
 				H: author$project$Particle$positiveInfinity,
-				x: {aR: 0, aS: 0},
-				j: {t: 0, A: 0}
+				o: {aR: 0, aS: 0},
+				k: {u: 0, A: 0}
 			};
 		},
 		generator);
@@ -5175,14 +5175,14 @@ var author$project$Particle$withDirection = elm$random$Random$map2(
 	F2(
 		function (direction_, _n0) {
 			var particle = _n0;
-			var velocity = particle.j;
+			var velocity = particle.k;
 			return _Utils_update(
 				particle,
 				{
-					j: _Utils_update(
+					k: _Utils_update(
 						velocity,
 						{
-							t: direction_ - elm$core$Basics$degrees(90)
+							u: direction_ - elm$core$Basics$degrees(90)
 						})
 				});
 		}));
@@ -5211,17 +5211,17 @@ var author$project$Particle$withLocation = elm$random$Random$map2(
 			var particle = _n0;
 			return _Utils_update(
 				particle,
-				{x: position});
+				{o: position});
 		}));
 var author$project$Particle$withSpeed = elm$random$Random$map2(
 	F2(
 		function (speed_, _n0) {
 			var particle = _n0;
-			var velocity = particle.j;
+			var velocity = particle.k;
 			return _Utils_update(
 				particle,
 				{
-					j: _Utils_update(
+					k: _Utils_update(
 						velocity,
 						{A: speed_})
 				});
@@ -5287,7 +5287,7 @@ var author$project$Main$waterEmitter = function (delta) {
 };
 var author$project$Particle$System$System = elm$core$Basics$identity;
 var author$project$Particle$System$init = function (seed) {
-	return {n: _List_Nil, I: seed};
+	return {i: _List_Nil, I: seed};
 };
 var author$project$Particle$System$NewFrame = F3(
 	function (a, b, c) {
@@ -5690,7 +5690,7 @@ var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Particle$System$sub = F3(
 	function (emitters, msg, outer) {
 		var system = outer;
-		return (elm$core$List$isEmpty(emitters) && elm$core$List$isEmpty(system.n)) ? elm$core$Platform$Sub$none : elm$browser$Browser$Events$onAnimationFrameDelta(
+		return (elm$core$List$isEmpty(emitters) && elm$core$List$isEmpty(system.i)) ? elm$core$Platform$Sub$none : elm$browser$Browser$Events$onAnimationFrameDelta(
 			function (delta) {
 				var _n0 = A3(author$project$Particle$System$emitterParticles, delta, emitters, outer);
 				var particles = _n0.a;
@@ -5718,14 +5718,14 @@ var elm$core$Basics$toPolar = function (_n0) {
 var author$project$Particle$update = F2(
 	function (deltaMs, _n0) {
 		var particle = _n0;
-		var position = particle.x;
-		var velocity = particle.j;
+		var position = particle.o;
+		var velocity = particle.k;
 		var acceleration = particle.O;
 		var drag = particle.P;
 		var lifetime = particle.F;
 		var deltaSeconds = deltaMs / 1000;
 		var _n1 = elm$core$Basics$fromPolar(
-			_Utils_Tuple2(velocity.A, velocity.t));
+			_Utils_Tuple2(velocity.A, velocity.u));
 		var velocityX = _n1.a;
 		var velocityY = _n1.b;
 		var newPosition = {aR: (position.aR + (velocityX * deltaSeconds)) + (((acceleration.aR * deltaSeconds) * deltaSeconds) / 2), aS: (position.aS + (velocityY * deltaSeconds)) + (((acceleration.aS * deltaSeconds) * deltaSeconds) / 2)};
@@ -5736,13 +5736,13 @@ var author$project$Particle$update = F2(
 				P: drag,
 				F: lifetime - deltaSeconds,
 				H: particle.H,
-				x: newPosition,
-				j: function () {
+				o: newPosition,
+				k: function () {
 					var _n2 = elm$core$Basics$toPolar(
 						_Utils_Tuple2(velocityX + (acceleration.aR * deltaSeconds), velocityY + (acceleration.aS * deltaSeconds)));
 					var speed_ = _n2.a;
 					var direction_ = _n2.b;
-					return {t: direction_, A: speed_ - ((((((drag.Y * drag.W) * 0.5) * drag.aa) * speed_) * speed_) * deltaSeconds)};
+					return {u: direction_, A: speed_ - ((((((drag.Y * drag.W) * 0.5) * drag.aa) * speed_) * speed_) * deltaSeconds)};
 				}()
 			});
 	});
@@ -5771,10 +5771,10 @@ var author$project$Particle$System$update = F2(
 		var seed = _n0.c;
 		var system = _n1;
 		return {
-			n: A2(
+			i: A2(
 				elm$core$List$filterMap,
 				author$project$Particle$update(delta),
-				_Utils_ap(particles, system.n)),
+				_Utils_ap(particles, system.i)),
 			I: seed
 		};
 	});

@@ -127,10 +127,14 @@ viewHtml viewParticle attrs (System { particles }) =
     Html.div attrs (List.map (Particle.viewHtml viewParticle) particles)
 
 
-{-| Do the same thing as [`view`](#view) but render your own custom wrapper type instead of SVG.
+{-| Do the same thing as [`view`](#view) but render your own custom wrapper type
+instead of SVG. You will want this if you are using something like
+[`Html.Styled`](https://package.elm-lang.org/packages/rtfeldman/elm-css/latest/Html-Styled)
+or [`TypedSvg`](https://package.elm-lang.org/packages/elm-community/typed-svg/latest/),
+for example.
 
-If you use this we do not know how to position the particle. Please use `Particle.leftPixels` and
-`Particle.topPixels` to do that yourself.
+If you use this we do not know how to position the particle. Please use
+`Particle.leftPixels` and `Particle.topPixels` to do that yourself.
 
 -}
 viewCustom : (Particle a -> renderedParticle) -> (List renderedParticle -> wrapper) -> System a -> wrapper

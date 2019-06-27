@@ -1,7 +1,7 @@
 module Particle.System exposing
     ( System, init
     , burst
-    , Msg, update, view, viewHtml, sub
+    , Msg, update, view, viewHtml, viewCustom, sub
     )
 
 {-|
@@ -19,7 +19,7 @@ module Particle.System exposing
 
 # Simulate Particles
 
-@docs Msg, update, view, viewHtml, sub
+@docs Msg, update, view, viewHtml, viewCustom, sub
 
 -}
 
@@ -125,6 +125,17 @@ view viewParticle attrs (System { particles }) =
 viewHtml : (Particle a -> Html msg) -> List (Html.Attribute msg) -> System a -> Html msg
 viewHtml viewParticle attrs (System { particles }) =
     Html.div attrs (List.map (Particle.viewHtml viewParticle) particles)
+
+
+{-| Do the same thing as [`view`](#view) but render your own custom wrapper type instead of SVG.
+
+If you use this we do not know how to position the particle. Please use `Particle.leftPixels` and
+`Particle.topPixels` to do that yourself.
+
+-}
+viewCustom : (Particle a -> renderedParticle) -> (List renderedParticle -> wrapper) -> System a -> wrapper
+viewCustom viewParticle wrap (System { particles }) =
+    wrap (List.map viewParticle particles)
 
 
 {-| Subscribe to the right events in the browser. In this case, that's

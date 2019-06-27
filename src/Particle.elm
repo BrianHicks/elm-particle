@@ -1,6 +1,6 @@
 module Particle exposing
     ( Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag
-    , view, viewHtml, data, lifetimePercent, direction, directionDegrees, speed
+    , view, viewHtml, data, lifetimePercent, direction, directionDegrees, speed, leftPixels, topPixels
     , update
     )
 
@@ -77,7 +77,7 @@ folder of the source on GitHub. Go check those out!
 
 # Rendering Particles
 
-@docs view, viewHtml, data, lifetimePercent, direction, directionDegrees, speed
+@docs view, viewHtml, data, lifetimePercent, direction, directionDegrees, speed, leftPixels, topPixels
 
 
 # Simulation
@@ -428,6 +428,22 @@ things like stretching or squashing the shape in response to changes in motion.
 speed : Particle a -> Float
 speed (Particle { velocity }) =
     velocity.speed
+
+
+{-| Get the position from the left side of the screen in pixels. You only
+need this when using `Particle.System.viewCustom`.
+-}
+leftPixels : Particle a -> Float
+leftPixels (Particle { position }) =
+    position.x
+
+
+{-| Get the position from the top side of the screen in pixels. You only
+need this when using `Particle.System.viewCustom`.
+-}
+topPixels : Particle a -> Float
+topPixels (Particle { position }) =
+    position.y
 
 
 

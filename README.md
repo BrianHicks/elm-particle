@@ -26,6 +26,13 @@ The source for these examples all live in the `examples` directory on GitHub.
 If you'd like to see how this is done step-by-step, I gave a [20-minute presentation at Olso Elm Day 2019](https://www.youtube.com/watch?v=goL7LeDHFi4).
 There's also [an Elm town episode on the background behind elm-particle](https://elmtown.simplecast.fm/confetti-and-waterfalls).
 
+## Climate Action
+
+I want my open-source activities to support projects addressing the climate crisis (for example, projects in clean energy, public transit, reforestation, or sustainable agriculture.)
+If you are working on such a project, and find a bug or missing feature in any of my libraries, **please let me know and I will treat your issue as high priority.**
+I'd also be happy to support such projects in other ways.
+In particular, I've worked with Elm for a long time and would be happy to advise on your implementation.
+
 ## License
 
 `elm-particle` is licensed under the BSD 3-Clause license, located at `LICENSE`.

@@ -1,7 +1,7 @@
 module Particle.System exposing
     ( System, init
     , burst
-    , Msg, update, view, viewHtml, viewCustom, sub
+    , update, view, viewHtml, viewCustom, sub
     )
 
 {-|
@@ -60,12 +60,6 @@ init seed =
         }
 
 
-{-| Get me from [`sub`](#sub) and pass me to [`update`](#update)!
--}
-type Msg a
-    = NewFrame Float (List (Particle a)) Random.Seed
-
-
 {-| Make a burst of a bunch of particles at once! Use this for things like
 confetti or fireworks. We use randomness here because 100 particles all doing
 exactly the same thing tends to be uninteresting.
@@ -88,13 +82,39 @@ burst generator (System system) =
 
 
 {-| Update all the particles by one step. Use it in your `update` function
-whenever you get a [`Msg`](#Msg). Probably like this:
+whenever you get a delta.
 
-    update msg model.system
+The first parameter here is a list of emitters. These are different than bursts
+in that they continuously spout particles. This can create particle effects like
+water or fire. They live in the subscription so that we can manage our
+subscriptions intelligently. It also means that you don't have to store
+generators—which contain functions—in your model. So maybe you want to turn a
+stream of water on and off, or control the pressure? That's great! You can store
+those parameters in your model, and use them to make your generators.
+
+Each emitter gets the time since the last frame in milliseconds so that it can
+calculate how many particles to emit. So, for example, a water emitter that
+emitted 60 drops per second may look like this:
+
+    waterEmitter : Float -> Generator (List (Particle Droplet))
+    waterEmitter delta =
+        Random.list (ceiling (delta * (60 / 1000))) dropletGenerator
+
+Then you'd use this in your update like this:
+
+    update [ waterEmitter ] delta model.system
 
 -}
-update : Msg a -> System a -> System a
-update (NewFrame delta particles seed) (System system) =
+update : List (Float -> Generator (List (Particle a))) -> Float -> System a -> System a
+update emitters delta (System system) =
+    let
+        ( particles, seed ) =
+            if emitters /= [] then
+                emitterParticles delta emitters system.seed
+
+            else
+                ( [], system.seed )
+    in
     System
         { particles = List.filterMap (Particle.update delta) (particles ++ system.particles)
         , seed = seed
@@ -145,27 +165,11 @@ viewCustom viewParticle wrap (System { particles }) =
 {-| Subscribe to the right events in the browser. In this case, that's
 `requestAnimationFrame` deltas. You don't have to worry about how to hook up the
 right functions, just stick this in the subscriptions of your app and call
-`update` with the `Msg` you get.
-
-The first parameter here is a list of emitters. These are different than bursts
-in that they continuously spout particles. This can create particle effects like
-water or fire. They live in the subscription so that we can manage our
-subscriptions intelligently. It also means that you don't have to store
-generators—which contain functions—in your model. So maybe you want to turn a
-stream of water on and off, or control the pressure? That's great! You can store
-those parameters in your model, and use them to make your generators.
-
-Each emitter gets the time since the last frame in milliseconds so that it can
-calculate how many particles to emit. So, for example, a water emitter that
-emitted 60 drops per second may look like this:
-
-    waterEmitter : Float -> Generator (List (Particle Droplet))
-    waterEmitter delta =
-        Random.list (ceiling (delta * (60 / 1000))) dropletGenerator
+`update` with the `ParticleMsg Float`.
 
 Then you'd use this in your subscription like this:
 
-    sub [ waterEmitter ] ParticleMsg model.system
+    sub ParticleMsg model.system
 
 If this doesn't make sense, go read the [`Water.elm`][water] example, which ties
 all of this together.
@@ -173,24 +177,17 @@ all of this together.
 [water]: https://brianhicks.github.io/elm-particle/Water.html
 
 -}
-sub : List (Float -> Generator (List (Particle a))) -> (Msg a -> msg) -> System a -> Sub msg
-sub emitters msg ((System system) as outer) =
-    if List.isEmpty emitters && List.isEmpty system.particles then
+sub : (Float -> msg) -> System a -> Sub msg
+sub msg (System { particles }) =
+    if List.isEmpty particles then
         Sub.none
 
     else
-        Browser.Events.onAnimationFrameDelta
-            (\delta ->
-                let
-                    ( particles, seed ) =
-                        emitterParticles delta emitters outer
-                in
-                msg <| NewFrame delta particles seed
-            )
+        Browser.Events.onAnimationFrameDelta msg
 
 
-emitterParticles : Float -> List (Float -> Generator (List (Particle a))) -> System a -> ( List (Particle a), Random.Seed )
-emitterParticles delta emitters (System { seed }) =
+emitterParticles : Float -> List (Float -> Generator (List (Particle a))) -> Random.Seed -> ( List (Particle a), Random.Seed )
+emitterParticles delta emitters seed =
     emitters
         |> List.foldl
             (\emitter ( particles, curSeed ) ->

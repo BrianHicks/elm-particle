@@ -59,15 +59,15 @@ type alias Model =
 
 
 type Msg
-    = ParticleMsg (System.Msg Firework)
+    = ParticleMsg Float
     | Detonate
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ParticleMsg inner ->
-            ( System.update inner model, Cmd.none )
+        ParticleMsg delta ->
+            ( System.update [] delta model, Cmd.none )
 
         Detonate ->
             ( System.burst
@@ -183,5 +183,5 @@ main =
         { init = \_ -> ( System.init (Random.initialSeed 0), Cmd.none )
         , update = update
         , view = view
-        , subscriptions = \model -> System.sub [] ParticleMsg model
+        , subscriptions = \model -> System.sub ParticleMsg model
         }

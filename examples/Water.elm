@@ -23,14 +23,13 @@ import Svg.Attributes as SAttrs
 {-| This `main` is as minimal as possible. The thing to pay attention to is the
 call to `System.sub` below, which contains our emitter.
 -}
-main : Program () (System Droplet) (System.Msg Droplet)
+main : Program () (System Droplet) Float
 main =
     Browser.element
-        { init = \_ -> ( System.init (Random.initialSeed 0), Cmd.none )
+        { init = \_ -> ( System.init (Random.initialSeed 0) |> System.burst (waterEmitter 1), Cmd.none )
         , view = view
-        , update = \msg system -> ( System.update msg system, Cmd.none )
-        , subscriptions =
-            \system -> System.sub [ waterEmitter ] identity system
+        , update = \delta system -> ( System.update [ waterEmitter ] delta system, Cmd.none )
+        , subscriptions = System.sub identity
         }
 
 

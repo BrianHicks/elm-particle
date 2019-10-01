@@ -457,23 +457,26 @@ That said, this updates a single particle, given a delta in milliseconds.
 
 -}
 update : Float -> Particle a -> Maybe (Particle a)
-update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } as particle)) =
-    let
-        deltaSeconds =
-            deltaMs / 1000
-
-        ( velocityX, velocityY ) =
-            fromPolar ( velocity.speed, velocity.direction )
-
-        newPosition =
-            { x = position.x + velocityX * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
-            , y = position.y + velocityY * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
-            }
-    in
-    if lifetime < 0 then
+update deltaMs (Particle particle) =
+    if particle.lifetime < 0 then
         Nothing
 
     else
+        let
+            { position, velocity, acceleration, drag, lifetime } =
+                particle
+
+            deltaSeconds =
+                deltaMs / 1000
+
+            ( velocityX, velocityY ) =
+                fromPolar ( velocity.speed, velocity.direction )
+
+            newPosition =
+                { x = position.x + velocityX * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
+                , y = position.y + velocityY * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
+                }
+        in
         (Just << Particle)
             { data = particle.data
             , position = newPosition

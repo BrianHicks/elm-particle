@@ -161,7 +161,7 @@ type Msg
     = TriggerBurst
     | BurstAtMouse
     | MouseMove Float Float
-    | ParticleMsg (System.Msg Confetti)
+    | ParticleMsg Float
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -196,7 +196,7 @@ update msg model =
             )
 
         ParticleMsg particleMsg ->
-            ( { model | system = System.update particleMsg model.system }
+            ( { model | system = System.update [] particleMsg model.system }
             , Cmd.none
             )
 
@@ -332,7 +332,7 @@ main =
         , subscriptions =
             \model ->
                 Sub.batch
-                    [ System.sub [] ParticleMsg model.system
+                    [ System.sub ParticleMsg model.system
                     , Browser.Events.onClick (Decode.succeed TriggerBurst)
                     , Browser.Events.onMouseMove
                         (Decode.map2 MouseMove

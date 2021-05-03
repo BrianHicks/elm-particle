@@ -16,7 +16,7 @@ module Particle.System exposing
 
 # Simulate Particles
 
-@docs Msg, update, view, viewHtml, viewCustom, hasParticles, sub
+@docs Msg, update, view, viewHtml, viewCustom, sub
 
 -}
 

@@ -1,6 +1,6 @@
 module Particle exposing
     ( Particle, init, withLifetime, withDelay, withLocation, withDirection, withSpeed, withGravity, withDrag
-    , view, viewHtml, data, lifetimePercent, direction, directionDegrees, speed, leftPixels, topPixels
+    , view, viewHtml, data, lifetimePercent, lifetime, direction, directionDegrees, speed, leftPixels, topPixels
     , update
     )
 
@@ -77,7 +77,7 @@ folder of the source on GitHub. Go check those out!
 
 # Rendering Particles
 
-@docs view, viewHtml, data, lifetimePercent, direction, directionDegrees, speed, leftPixels, topPixels
+@docs view, viewHtml, data, lifetimePercent, lifetime, direction, directionDegrees, speed, leftPixels, topPixels
 
 
 # Simulation
@@ -173,8 +173,8 @@ are the best system we have for this!
 withLifetime : Generator Float -> Generator (Particle a) -> Generator (Particle a)
 withLifetime =
     Random.map2
-        (\lifetime (Particle particle) ->
-            Particle { particle | originalLifetime = lifetime }
+        (\lifetime_ (Particle particle) ->
+            Particle { particle | originalLifetime = lifetime_ }
         )
 
 
@@ -200,8 +200,8 @@ of 0.25 seconds.)
 withDelay : Generator Float -> Generator (Particle a) -> Generator (Particle a)
 withDelay =
     Random.map2
-        (\lifetime (Particle particle) ->
-            Particle { particle | lifetime = -(abs lifetime) }
+        (\delay (Particle particle) ->
+            Particle { particle | lifetime = -(abs delay) }
         )
 
 
@@ -388,28 +388,28 @@ wrapping whatever you pass in a `<g>` element.
 
 -}
 view : (Particle a -> Svg msg) -> Particle a -> Svg msg
-view viewData ((Particle { position, lifetime }) as particle) =
-    if lifetime <= 0 then
+view viewData ((Particle particle_) as particle) =
+    if particle_.lifetime <= 0 then
         Svg.text ""
 
     else
         Svg.g
-            [ Attrs.transform ("translate(" ++ String.fromFloat position.x ++ "," ++ String.fromFloat position.y ++ ")") ]
+            [ Attrs.transform ("translate(" ++ String.fromFloat particle_.position.x ++ "," ++ String.fromFloat particle_.position.y ++ ")") ]
             [ viewData particle ]
 
 
 {-| Do the same thing as [`view`](#view) but render HTML instead of SVG.
 -}
 viewHtml : (Particle a -> Html msg) -> Particle a -> Html msg
-viewHtml viewData ((Particle { position, lifetime }) as particle) =
-    if lifetime <= 0 then
+viewHtml viewData ((Particle particle_) as particle) =
+    if particle_.lifetime <= 0 then
         Svg.text ""
 
     else
         Html.div
             [ Html.Attributes.style "position" "absolute"
-            , Html.Attributes.style "left" (String.fromFloat position.x ++ "px")
-            , Html.Attributes.style "top" (String.fromFloat position.y ++ "px")
+            , Html.Attributes.style "left" (String.fromFloat particle_.position.x ++ "px")
+            , Html.Attributes.style "top" (String.fromFloat particle_.position.y ++ "px")
             ]
             [ viewData particle ]
 
@@ -426,8 +426,18 @@ returns a number between 0 and 1, which is useful for setting opacity to
 smoothly fade a particle out instead of having it just disappear.
 -}
 lifetimePercent : Particle a -> Float
-lifetimePercent (Particle { lifetime, originalLifetime }) =
-    clamp 0 1 <| 1 - (lifetime / originalLifetime)
+lifetimePercent (Particle particle) =
+    clamp 0 1 <| 1 - (particle.lifetime / particle.originalLifetime)
+
+
+{-| Get how long a particle has been alive, in seconds. This is mostly useful
+for deciding whether or not to display a particle (if it's been delayed,
+this value will be a countdown to when it should show up.) In most cases,
+[`lifetimePercent`](#lifetimePercent) will be much more useful!
+-}
+lifetime : Particle a -> Float
+lifetime (Particle particle) =
+    particle.lifetime
 
 
 {-| Get the direction the particle is currently facing. This is useful for
@@ -488,15 +498,15 @@ That said, this updates a single particle, given a delta in milliseconds.
 
 -}
 update : Float -> Particle a -> Maybe (Particle a)
-update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } as particle)) =
+update deltaMs (Particle ({ position, velocity, acceleration, drag } as particle)) =
     let
         deltaSeconds =
             deltaMs / 1000
     in
-    if lifetime > particle.originalLifetime then
+    if particle.lifetime > particle.originalLifetime then
         Nothing
 
-    else if lifetime < 0 then
+    else if particle.lifetime < 0 then
         (Just << Particle)
             { data = particle.data
             , position = particle.position
@@ -504,7 +514,7 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
             , acceleration = particle.acceleration
             , drag = particle.drag
             , originalLifetime = particle.originalLifetime
-            , lifetime = lifetime + deltaSeconds
+            , lifetime = particle.lifetime + deltaSeconds
             }
 
     else
@@ -534,7 +544,7 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
             , acceleration = acceleration
             , drag = drag
             , originalLifetime = particle.originalLifetime
-            , lifetime = lifetime + deltaSeconds
+            , lifetime = particle.lifetime + deltaSeconds
             }
 
 

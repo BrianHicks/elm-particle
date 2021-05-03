@@ -145,7 +145,17 @@ If you use this we do not know how to position the particle. Please use
 -}
 viewCustom : (Particle a -> renderedParticle) -> (List renderedParticle -> wrapper) -> System a -> wrapper
 viewCustom viewParticle wrap (System { particles }) =
-    wrap (List.map viewParticle particles)
+    particles
+        |> List.foldr
+            (\particle soFar ->
+                if Particle.lifetime particle < 0 then
+                    soFar
+
+                else
+                    viewParticle particle :: soFar
+            )
+            []
+        |> wrap
 
 
 {-| Subscribe to the right events in the browser. In this case, that's

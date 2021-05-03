@@ -1,5 +1,5 @@
 module Particle exposing
-    ( Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag
+    ( Particle, init, withLifetime, withDelay, withLocation, withDirection, withSpeed, withGravity, withDrag
     , view, viewHtml, data, lifetimePercent, direction, directionDegrees, speed, leftPixels, topPixels
     , update
     )
@@ -72,7 +72,7 @@ folder of the source on GitHub. Go check those out!
 
 # Constructing Particles
 
-@docs Particle, init, withLifetime, withLocation, withDirection, withSpeed, withGravity, withDrag
+@docs Particle, init, withLifetime, withDelay, withLocation, withDirection, withSpeed, withGravity, withDrag
 
 
 # Rendering Particles
@@ -141,7 +141,7 @@ init generator =
                 , acceleration = { x = 0, y = 0 }
                 , drag = { density = 0, area = 0, coefficient = 0 }
                 , originalLifetime = positiveInfinity
-                , lifetime = positiveInfinity
+                , lifetime = 0
                 }
         )
         generator
@@ -174,11 +174,34 @@ withLifetime : Generator Float -> Generator (Particle a) -> Generator (Particle 
 withLifetime =
     Random.map2
         (\lifetime (Particle particle) ->
-            Particle
-                { particle
-                    | originalLifetime = lifetime
-                    , lifetime = lifetime
-                }
+            Particle { particle | originalLifetime = lifetime }
+        )
+
+
+{-| You might want your particles to appear over a little time, instead of
+all at once. This is how you get that effect without doing a lot of Elm
+Architecture plumbing. Like [`withLifetime`](#withLifetime), this uses
+seconds instead of milliseconds.
+
+This code will produce particles that live 1 second, but don't show up until
+between 0 and 1 seconds after the initial event:
+
+    init confetti
+        |> withLifetime (Random.constant 1)
+        |> withDelay (Random.float 0 1)
+
+It's OK if your generator produces negative values; we'll just call `abs` on
+them before rendering. This makes it way easier to use `Random.Float.normal`
+to get a bunch of particles to show up at once but trail off over time
+(e.g. `normal 0 0.25` would be centered around 0 with a standard deviation
+of 0.25 seconds.)
+
+-}
+withDelay : Generator Float -> Generator (Particle a) -> Generator (Particle a)
+withDelay =
+    Random.map2
+        (\lifetime (Particle particle) ->
+            Particle { particle | lifetime = -(abs lifetime) }
         )
 
 
@@ -365,22 +388,30 @@ wrapping whatever you pass in a `<g>` element.
 
 -}
 view : (Particle a -> Svg msg) -> Particle a -> Svg msg
-view viewData ((Particle { position }) as particle) =
-    Svg.g
-        [ Attrs.transform ("translate(" ++ String.fromFloat position.x ++ "," ++ String.fromFloat position.y ++ ")") ]
-        [ viewData particle ]
+view viewData ((Particle { position, lifetime }) as particle) =
+    if lifetime <= 0 then
+        Svg.text ""
+
+    else
+        Svg.g
+            [ Attrs.transform ("translate(" ++ String.fromFloat position.x ++ "," ++ String.fromFloat position.y ++ ")") ]
+            [ viewData particle ]
 
 
 {-| Do the same thing as [`view`](#view) but render HTML instead of SVG.
 -}
 viewHtml : (Particle a -> Html msg) -> Particle a -> Html msg
-viewHtml viewData ((Particle { position }) as particle) =
-    Html.div
-        [ Html.Attributes.style "position" "absolute"
-        , Html.Attributes.style "left" (String.fromFloat position.x ++ "px")
-        , Html.Attributes.style "top" (String.fromFloat position.y ++ "px")
-        ]
-        [ viewData particle ]
+viewHtml viewData ((Particle { position, lifetime }) as particle) =
+    if lifetime <= 0 then
+        Svg.text ""
+
+    else
+        Html.div
+            [ Html.Attributes.style "position" "absolute"
+            , Html.Attributes.style "left" (String.fromFloat position.x ++ "px")
+            , Html.Attributes.style "top" (String.fromFloat position.y ++ "px")
+            ]
+            [ viewData particle ]
 
 
 {-| Get the data you passed in out of a particle, for use in view functions.
@@ -396,7 +427,7 @@ smoothly fade a particle out instead of having it just disappear.
 -}
 lifetimePercent : Particle a -> Float
 lifetimePercent (Particle { lifetime, originalLifetime }) =
-    clamp 0 1 <| lifetime / originalLifetime
+    clamp 0 1 <| 1 - (lifetime / originalLifetime)
 
 
 {-| Get the direction the particle is currently facing. This is useful for
@@ -461,19 +492,31 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
     let
         deltaSeconds =
             deltaMs / 1000
-
-        ( velocityX, velocityY ) =
-            fromPolar ( velocity.speed, velocity.direction )
-
-        newPosition =
-            { x = position.x + velocityX * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
-            , y = position.y + velocityY * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
-            }
     in
-    if lifetime < 0 then
+    if lifetime > particle.originalLifetime then
         Nothing
 
+    else if lifetime < 0 then
+        (Just << Particle)
+            { data = particle.data
+            , position = particle.position
+            , velocity = particle.velocity
+            , acceleration = particle.acceleration
+            , drag = particle.drag
+            , originalLifetime = particle.originalLifetime
+            , lifetime = lifetime + deltaSeconds
+            }
+
     else
+        let
+            ( velocityX, velocityY ) =
+                fromPolar ( velocity.speed, velocity.direction )
+
+            newPosition =
+                { x = position.x + velocityX * deltaSeconds + acceleration.x * deltaSeconds * deltaSeconds / 2
+                , y = position.y + velocityY * deltaSeconds + acceleration.y * deltaSeconds * deltaSeconds / 2
+                }
+        in
         (Just << Particle)
             { data = particle.data
             , position = newPosition
@@ -491,7 +534,7 @@ update deltaMs (Particle ({ position, velocity, acceleration, drag, lifetime } a
             , acceleration = acceleration
             , drag = drag
             , originalLifetime = particle.originalLifetime
-            , lifetime = lifetime - deltaSeconds
+            , lifetime = lifetime + deltaSeconds
             }
 
 

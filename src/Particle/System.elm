@@ -1,15 +1,12 @@
 module Particle.System exposing
-    ( System, init
+    ( System, init, hasParticles
     , burst
     , Msg, update, view, viewHtml, viewCustom, sub
     )
 
 {-|
 
-
-# Constructing
-
-@docs System, init
+@docs System, init, hasParticles
 
 
 # Gimme some particles!
@@ -19,7 +16,7 @@ module Particle.System exposing
 
 # Simulate Particles
 
-@docs Msg, update, view, viewHtml, viewCustom, sub
+@docs Msg, update, view, viewHtml, viewCustom, hasParticles, sub
 
 -}
 
@@ -58,6 +55,15 @@ init seed =
         { seed = seed
         , particles = []
         }
+
+
+{-| Are there any living particles in the system? Useful for conditionally
+showing or hiding the view, or letting effects finish gracefully before
+moving on to the next part of your app.
+-}
+hasParticles : System a -> Bool
+hasParticles (System { particles }) =
+    particles == []
 
 
 {-| Get me from [`sub`](#sub) and pass me to [`update`](#update)!

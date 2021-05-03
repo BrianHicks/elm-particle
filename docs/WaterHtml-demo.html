@@ -4203,8 +4203,8 @@ function _Browser_getViewport()
 	return {
 		au: _Browser_getScene(),
 		ax: {
-			h: _Browser_window.pageXOffset,
-			i: _Browser_window.pageYOffset,
+			j: _Browser_window.pageXOffset,
+			k: _Browser_window.pageYOffset,
 			J: _Browser_doc.documentElement.clientWidth,
 			D: _Browser_doc.documentElement.clientHeight
 		}
@@ -4245,8 +4245,8 @@ function _Browser_getViewportOf(id)
 				D: node.scrollHeight
 			},
 			ax: {
-				h: node.scrollLeft,
-				i: node.scrollTop,
+				j: node.scrollLeft,
+				k: node.scrollTop,
 				J: node.clientWidth,
 				D: node.clientHeight
 			}
@@ -4280,14 +4280,14 @@ function _Browser_getElement(id)
 		return {
 			au: _Browser_getScene(),
 			ax: {
-				h: x,
-				i: y,
+				j: x,
+				k: y,
 				J: _Browser_doc.documentElement.clientWidth,
 				D: _Browser_doc.documentElement.clientHeight
 			},
 			aC: {
-				h: x + rect.left,
-				i: y + rect.top,
+				j: x + rect.left,
+				k: y + rect.top,
 				J: rect.width,
 				D: rect.height
 			}
@@ -5146,7 +5146,7 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Particle$System$System = $elm$core$Basics$identity;
 var $author$project$Particle$System$init = function (seed) {
-	return {k: _List_Nil, M: seed};
+	return {m: _List_Nil, M: seed};
 };
 var $elm$random$Random$Seed = F2(
 	function (a, b) {
@@ -5350,7 +5350,7 @@ var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$Ani
 var $author$project$Particle$System$sub = F3(
 	function (emitters, msg, outer) {
 		var system = outer;
-		return ($elm$core$List$isEmpty(emitters) && $elm$core$List$isEmpty(system.k)) ? $elm$core$Platform$Sub$none : $elm$browser$Browser$Events$onAnimationFrameDelta(
+		return ($elm$core$List$isEmpty(emitters) && $elm$core$List$isEmpty(system.m)) ? $elm$core$Platform$Sub$none : $elm$browser$Browser$Events$onAnimationFrameDelta(
 			function (delta) {
 				var _v0 = A3($author$project$Particle$System$emitterParticles, delta, emitters, outer);
 				var particles = _v0.a;
@@ -5399,35 +5399,34 @@ var $elm$core$Basics$toPolar = function (_v0) {
 var $author$project$Particle$update = F2(
 	function (deltaMs, _v0) {
 		var particle = _v0;
-		var position = particle.l;
-		var velocity = particle.g;
+		var position = particle.h;
+		var velocity = particle.i;
 		var acceleration = particle.z;
 		var drag = particle.B;
-		var lifetime = particle.p;
 		var deltaSeconds = deltaMs / 1000;
-		if (_Utils_cmp(lifetime, particle.s) > 0) {
+		if (_Utils_cmp(particle.g, particle.s) > 0) {
 			return $elm$core$Maybe$Nothing;
 		} else {
-			if (lifetime < 0) {
+			if (particle.g < 0) {
 				return A2($elm$core$Basics$composeL, $elm$core$Maybe$Just, $elm$core$Basics$identity)(
-					{z: particle.z, u: particle.u, B: particle.B, p: lifetime + deltaSeconds, s: particle.s, l: particle.l, g: particle.g});
+					{z: particle.z, u: particle.u, B: particle.B, g: particle.g + deltaSeconds, s: particle.s, h: particle.h, i: particle.i});
 			} else {
 				var _v1 = $elm$core$Basics$fromPolar(
 					_Utils_Tuple2(velocity.H, velocity.A));
 				var velocityX = _v1.a;
 				var velocityY = _v1.b;
-				var newPosition = {h: (position.h + (velocityX * deltaSeconds)) + (((acceleration.h * deltaSeconds) * deltaSeconds) / 2), i: (position.i + (velocityY * deltaSeconds)) + (((acceleration.i * deltaSeconds) * deltaSeconds) / 2)};
+				var newPosition = {j: (position.j + (velocityX * deltaSeconds)) + (((acceleration.j * deltaSeconds) * deltaSeconds) / 2), k: (position.k + (velocityY * deltaSeconds)) + (((acceleration.k * deltaSeconds) * deltaSeconds) / 2)};
 				return A2($elm$core$Basics$composeL, $elm$core$Maybe$Just, $elm$core$Basics$identity)(
 					{
 						z: acceleration,
 						u: particle.u,
 						B: drag,
-						p: lifetime + deltaSeconds,
+						g: particle.g + deltaSeconds,
 						s: particle.s,
-						l: newPosition,
-						g: function () {
+						h: newPosition,
+						i: function () {
 							var _v2 = $elm$core$Basics$toPolar(
-								_Utils_Tuple2(velocityX + (acceleration.h * deltaSeconds), velocityY + (acceleration.i * deltaSeconds)));
+								_Utils_Tuple2(velocityX + (acceleration.j * deltaSeconds), velocityY + (acceleration.k * deltaSeconds)));
 							var speed_ = _v2.a;
 							var direction_ = _v2.b;
 							return {A: direction_, H: speed_ - ((((((drag._ * drag.Y) * 0.5) * drag.ac) * speed_) * speed_) * deltaSeconds)};
@@ -5443,10 +5442,10 @@ var $author$project$Particle$System$update = F2(
 		var seed = _v0.c;
 		var system = _v1;
 		return {
-			k: A2(
+			m: A2(
 				$elm$core$List$filterMap,
 				$author$project$Particle$update(delta),
-				_Utils_ap(particles, system.k)),
+				_Utils_ap(particles, system.m)),
 			M: seed
 		};
 	});
@@ -5484,9 +5483,8 @@ var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Particle$viewHtml = F2(
 	function (viewData, particle) {
-		var position = particle.l;
-		var lifetime = particle.p;
-		return (lifetime <= 0) ? $elm$svg$Svg$text('') : A2(
+		var particle_ = particle;
+		return (particle_.g <= 0) ? $elm$svg$Svg$text('') : A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
@@ -5494,11 +5492,11 @@ var $author$project$Particle$viewHtml = F2(
 					A2(
 					$elm$html$Html$Attributes$style,
 					'left',
-					$elm$core$String$fromFloat(position.h) + 'px'),
+					$elm$core$String$fromFloat(particle_.h.j) + 'px'),
 					A2(
 					$elm$html$Html$Attributes$style,
 					'top',
-					$elm$core$String$fromFloat(position.i) + 'px')
+					$elm$core$String$fromFloat(particle_.h.k) + 'px')
 				]),
 			_List_fromArray(
 				[
@@ -5507,7 +5505,7 @@ var $author$project$Particle$viewHtml = F2(
 	});
 var $author$project$Particle$System$viewHtml = F3(
 	function (viewParticle, attrs, _v0) {
-		var particles = _v0.k;
+		var particles = _v0.m;
 		return A2(
 			$elm$html$Html$div,
 			attrs,
@@ -5694,13 +5692,13 @@ var $author$project$Particle$init = function (generator) {
 		$elm$random$Random$map,
 		function (a) {
 			return {
-				z: {h: 0, i: 0},
+				z: {j: 0, k: 0},
 				u: a,
 				B: {Y: 0, _: 0, ac: 0},
-				p: 0,
+				g: 0,
 				s: $author$project$Particle$positiveInfinity,
-				l: {h: 0, i: 0},
-				g: {A: 0, H: 0}
+				h: {j: 0, k: 0},
+				i: {A: 0, H: 0}
 			};
 		},
 		generator);
@@ -5738,11 +5736,11 @@ var $author$project$Particle$withDirection = $elm$random$Random$map2(
 	F2(
 		function (direction_, _v0) {
 			var particle = _v0;
-			var velocity = particle.g;
+			var velocity = particle.i;
 			return _Utils_update(
 				particle,
 				{
-					g: _Utils_update(
+					i: _Utils_update(
 						velocity,
 						{
 							A: direction_ - $elm$core$Basics$degrees(90)
@@ -5756,17 +5754,17 @@ var $author$project$Particle$withGravity = function (pxPerSecond) {
 			return _Utils_update(
 				particle,
 				{
-					z: {h: 0, i: pxPerSecond}
+					z: {j: 0, k: pxPerSecond}
 				});
 		});
 };
 var $author$project$Particle$withLifetime = $elm$random$Random$map2(
 	F2(
-		function (lifetime, _v0) {
+		function (lifetime_, _v0) {
 			var particle = _v0;
 			return _Utils_update(
 				particle,
-				{s: lifetime});
+				{s: lifetime_});
 		}));
 var $author$project$Particle$withLocation = $elm$random$Random$map2(
 	F2(
@@ -5774,17 +5772,17 @@ var $author$project$Particle$withLocation = $elm$random$Random$map2(
 			var particle = _v0;
 			return _Utils_update(
 				particle,
-				{l: position});
+				{h: position});
 		}));
 var $author$project$Particle$withSpeed = $elm$random$Random$map2(
 	F2(
 		function (speed_, _v0) {
 			var particle = _v0;
-			var velocity = particle.g;
+			var velocity = particle.i;
 			return _Utils_update(
 				particle,
 				{
-					g: _Utils_update(
+					i: _Utils_update(
 						velocity,
 						{H: speed_})
 				});
@@ -5808,7 +5806,7 @@ var $author$project$WaterHtml$waterEmitter = function (delta) {
 					A2(
 						$author$project$Particle$withLocation,
 						$elm$random$Random$constant(
-							{h: 50, i: 500}),
+							{j: 50, k: 500}),
 						A2(
 							$author$project$Particle$withLifetime,
 							$elm$random$Random$constant(1),

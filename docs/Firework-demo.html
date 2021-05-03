@@ -5149,7 +5149,7 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Particle$System$System = $elm$core$Basics$identity;
 var $author$project$Particle$System$init = function (seed) {
-	return {i: _List_Nil, K: seed};
+	return {k: _List_Nil, K: seed};
 };
 var $elm$random$Random$Seed = F2(
 	function (a, b) {
@@ -5353,7 +5353,7 @@ var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$Ani
 var $author$project$Particle$System$sub = F3(
 	function (emitters, msg, outer) {
 		var system = outer;
-		return ($elm$core$List$isEmpty(emitters) && $elm$core$List$isEmpty(system.i)) ? $elm$core$Platform$Sub$none : $elm$browser$Browser$Events$onAnimationFrameDelta(
+		return ($elm$core$List$isEmpty(emitters) && $elm$core$List$isEmpty(system.k)) ? $elm$core$Platform$Sub$none : $elm$browser$Browser$Events$onAnimationFrameDelta(
 			function (delta) {
 				var _v0 = A3($author$project$Particle$System$emitterParticles, delta, emitters, outer);
 				var particles = _v0.a;
@@ -5406,7 +5406,7 @@ var $author$project$Particle$System$burst = F2(
 		return _Utils_update(
 			system,
 			{
-				i: _Utils_ap(particles, system.i),
+				k: _Utils_ap(particles, system.k),
 				K: nextSeed
 			});
 	});
@@ -5475,10 +5475,10 @@ var $author$project$Particle$init = function (generator) {
 				x: {aN: 0, aO: 0},
 				s: a,
 				z: {as: 0, aw: 0, ax: 0},
-				n: 0,
+				g: 0,
 				q: $author$project$Particle$positiveInfinity,
-				j: {aN: 0, aO: 0},
-				g: {y: 0, F: 0}
+				h: {aN: 0, aO: 0},
+				i: {y: 0, F: 0}
 			};
 		},
 		generator);
@@ -5527,11 +5527,11 @@ var $author$project$Particle$withDirection = $elm$random$Random$map2(
 	F2(
 		function (direction_, _v0) {
 			var particle = _v0;
-			var velocity = particle.g;
+			var velocity = particle.i;
 			return _Utils_update(
 				particle,
 				{
-					g: _Utils_update(
+					i: _Utils_update(
 						velocity,
 						{
 							y: direction_ - $elm$core$Basics$degrees(90)
@@ -5540,21 +5540,21 @@ var $author$project$Particle$withDirection = $elm$random$Random$map2(
 		}));
 var $author$project$Particle$withLifetime = $elm$random$Random$map2(
 	F2(
-		function (lifetime, _v0) {
+		function (lifetime_, _v0) {
 			var particle = _v0;
 			return _Utils_update(
 				particle,
-				{q: lifetime});
+				{q: lifetime_});
 		}));
 var $author$project$Particle$withSpeed = $elm$random$Random$map2(
 	F2(
 		function (speed_, _v0) {
 			var particle = _v0;
-			var velocity = particle.g;
+			var velocity = particle.i;
 			return _Utils_update(
 				particle,
 				{
-					g: _Utils_update(
+					i: _Utils_update(
 						velocity,
 						{F: speed_})
 				});
@@ -5635,7 +5635,7 @@ var $author$project$Particle$withLocation = $elm$random$Random$map2(
 			var particle = _v0;
 			return _Utils_update(
 				particle,
-				{j: position});
+				{h: position});
 		}));
 var $author$project$Firework$fireworkAt = F3(
 	function (color, x, y) {
@@ -5746,18 +5746,17 @@ var $elm$core$Basics$toPolar = function (_v0) {
 var $author$project$Particle$update = F2(
 	function (deltaMs, _v0) {
 		var particle = _v0;
-		var position = particle.j;
-		var velocity = particle.g;
+		var position = particle.h;
+		var velocity = particle.i;
 		var acceleration = particle.x;
 		var drag = particle.z;
-		var lifetime = particle.n;
 		var deltaSeconds = deltaMs / 1000;
-		if (_Utils_cmp(lifetime, particle.q) > 0) {
+		if (_Utils_cmp(particle.g, particle.q) > 0) {
 			return $elm$core$Maybe$Nothing;
 		} else {
-			if (lifetime < 0) {
+			if (particle.g < 0) {
 				return A2($elm$core$Basics$composeL, $elm$core$Maybe$Just, $elm$core$Basics$identity)(
-					{x: particle.x, s: particle.s, z: particle.z, n: lifetime + deltaSeconds, q: particle.q, j: particle.j, g: particle.g});
+					{x: particle.x, s: particle.s, z: particle.z, g: particle.g + deltaSeconds, q: particle.q, h: particle.h, i: particle.i});
 			} else {
 				var _v1 = $elm$core$Basics$fromPolar(
 					_Utils_Tuple2(velocity.F, velocity.y));
@@ -5769,10 +5768,10 @@ var $author$project$Particle$update = F2(
 						x: acceleration,
 						s: particle.s,
 						z: drag,
-						n: lifetime + deltaSeconds,
+						g: particle.g + deltaSeconds,
 						q: particle.q,
-						j: newPosition,
-						g: function () {
+						h: newPosition,
+						i: function () {
 							var _v2 = $elm$core$Basics$toPolar(
 								_Utils_Tuple2(velocityX + (acceleration.aN * deltaSeconds), velocityY + (acceleration.aO * deltaSeconds)));
 							var speed_ = _v2.a;
@@ -5790,10 +5789,10 @@ var $author$project$Particle$System$update = F2(
 		var seed = _v0.c;
 		var system = _v1;
 		return {
-			i: A2(
+			k: A2(
 				$elm$core$List$filterMap,
 				$author$project$Particle$update(delta),
-				_Utils_ap(particles, system.i)),
+				_Utils_ap(particles, system.k)),
 			K: seed
 		};
 	});
@@ -5831,7 +5830,7 @@ var $author$project$Particle$data = function (_v0) {
 	return particle.s;
 };
 var $author$project$Particle$direction = function (_v0) {
-	var velocity = _v0.g;
+	var velocity = _v0.i;
 	return velocity.y;
 };
 var $author$project$Particle$directionDegrees = function (particle) {
@@ -5846,15 +5845,14 @@ var $author$project$Firework$hslString = F3(
 		return 'hsl(' + ($elm$core$String$fromFloat(hue) + (',' + ($elm$core$String$fromFloat(saturation) + ('%,' + ($elm$core$String$fromFloat(luminance) + '%)')))));
 	});
 var $author$project$Particle$lifetimePercent = function (_v0) {
-	var lifetime = _v0.n;
-	var originalLifetime = _v0.q;
-	return A3($elm$core$Basics$clamp, 0, 1, 1 - (lifetime / originalLifetime));
+	var particle = _v0;
+	return A3($elm$core$Basics$clamp, 0, 1, 1 - (particle.g / particle.q));
 };
 var $elm$svg$Svg$Attributes$opacity = _VirtualDom_attribute('opacity');
 var $elm$svg$Svg$Attributes$rx = _VirtualDom_attribute('rx');
 var $elm$svg$Svg$Attributes$ry = _VirtualDom_attribute('ry');
 var $author$project$Particle$speed = function (_v0) {
-	var velocity = _v0.g;
+	var velocity = _v0.i;
 	return velocity.F;
 };
 var $author$project$Firework$toHsl = function (color) {
@@ -5930,14 +5928,13 @@ var $elm$svg$Svg$g = $elm$svg$Svg$trustedNode('g');
 var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Particle$view = F2(
 	function (viewData, particle) {
-		var position = particle.j;
-		var lifetime = particle.n;
-		return (lifetime <= 0) ? $elm$svg$Svg$text('') : A2(
+		var particle_ = particle;
+		return (particle_.g <= 0) ? $elm$svg$Svg$text('') : A2(
 			$elm$svg$Svg$g,
 			_List_fromArray(
 				[
 					$elm$svg$Svg$Attributes$transform(
-					'translate(' + ($elm$core$String$fromFloat(position.aN) + (',' + ($elm$core$String$fromFloat(position.aO) + ')'))))
+					'translate(' + ($elm$core$String$fromFloat(particle_.h.aN) + (',' + ($elm$core$String$fromFloat(particle_.h.aO) + ')'))))
 				]),
 			_List_fromArray(
 				[
@@ -5946,7 +5943,7 @@ var $author$project$Particle$view = F2(
 	});
 var $author$project$Particle$System$view = F3(
 	function (viewParticle, attrs, _v0) {
-		var particles = _v0.i;
+		var particles = _v0.k;
 		return A2(
 			$elm$svg$Svg$svg,
 			attrs,

@@ -1,4 +1,4 @@
-module Main exposing (main)
+module Firework exposing (main)
 
 {-| HEADS UP! You can view this example alongside the running code at
 <https://brianhicks.github.io/elm-particle/Firework.html>

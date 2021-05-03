@@ -42,13 +42,11 @@ import Html.Attributes as Attrs exposing (style)
 import Json.Decode as Decode
 import Particle exposing (Particle)
 import Particle.System as System exposing (System)
-import Process
 import Random exposing (Generator)
 import Random.Extra
 import Random.Float exposing (normal)
 import Svg exposing (Svg)
 import Svg.Attributes as SAttrs
-import Task
 
 
 
@@ -142,6 +140,7 @@ particleAt : Float -> Float -> Generator (Particle Confetti)
 particleAt x y =
     Particle.init genConfetti
         |> Particle.withLifetime (normal 1.5 0.25)
+        |> Particle.withDelay (normal 0 0.1)
         |> Particle.withLocation (Random.constant { x = x, y = y })
         -- our direction is determined by the angle of the party popper cone
         -- (about 47°) as well as it's width (about 60°). We use a normal
@@ -181,7 +180,6 @@ type alias Model =
 
 type Msg
     = TriggerBurst
-    | BurstAtMouse
     | MouseMove Float Float
     | ParticleMsg (System.Msg Confetti)
 
@@ -190,25 +188,11 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TriggerBurst ->
-            ( model
-              -- it looks much nicer to delay the confetti burst a little bit;
-              -- it doesn't all come out at the same time in a real-life party
-              -- popper! But we also want to follow the mouse as it comes out,
-              -- so we're going to just tell the system to burst four times.
-            , Cmd.batch
-                [ Process.sleep 0 |> Task.perform (\_ -> BurstAtMouse)
-                , Process.sleep 50 |> Task.perform (\_ -> BurstAtMouse)
-                , Process.sleep 100 |> Task.perform (\_ -> BurstAtMouse)
-                , Process.sleep 150 |> Task.perform (\_ -> BurstAtMouse)
-                ]
-            )
-
-        BurstAtMouse ->
             let
                 ( x, y ) =
                     model.mouse
             in
-            ( { model | system = System.burst (Random.list 25 (particleAt x y)) model.system }
+            ( { model | system = System.burst (Random.list 100 (particleAt x y)) model.system }
             , Cmd.none
             )
 
